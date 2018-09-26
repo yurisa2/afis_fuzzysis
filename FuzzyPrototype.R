@@ -36,7 +36,8 @@ data_per_month <- aggregate(data_per_month[,4:ncol(data_per_month)-1], by=list(d
 data_per_month <- data_per_month[,c(1,3,4,5,12,13,14,16)]
 
 # Data Setting
-n_col_features <- c(1,2,3,10,11,12,13,14,15) # Define colunas para estudo;
+# n_col_features <- c(1,2,3,10,11,12,13,14,15) # Define colunas para estudo;
+n_col_features <- c(1,2) # Define colunas para estudo;
 nbin <- 19 # Define a Coluna Binária
 # ncoluna <- 12
 
@@ -74,37 +75,92 @@ weight_list_n <- function(dataset, nbin_func){
   return(as.numeric(list_w))
 }
 
-lista_basica <- weight_list_n(data_per_day,nbin)
+create_fuzzy_rules <- function(dataset) {
 
-nfuzzy_col <- 2
+  total_col <- length(n_col_features) + 3
+  m <- matrix(0L, nrow = 5*length(n_col_features), ncol = total_col)
+  m[,total_col] <- 1 # Add 1 to last col as in AND
 
-length(n_col_features)
+  j <- 1
+  for(i in 1:length(n_col_features))
+  {
+    feature_weight <- weight_list_n(data_per_day,nbin)[n_col_features[i]]
+    m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
+    m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0
+    m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
+    j <- j + 5 # Goto Next 5 Lines
+  }
+
+  return(m)
+}
+
+ma_test <-matrix(0L, nrow = 5, ncol = 9)  # @nrussell
+ma_test[,2] <- c(1,2,3,4,5)
+
+
 
 #Create Model and OutPut
 modelo_fuzzy <- newfis("modelo_zero")
 
-modelo_fuzzy <- addvar(modelo_fuzzy,"output","OutPutZERO", 0:100)
-modelo_fuzzy <- addmf(modelo_fuzzy,"output",1,"Low","trimf", c(0, 0, 50))
-modelo_fuzzy <- addmf(modelo_fuzzy,"output",1,"Medium","trimf", c(0, 50, 100))
-modelo_fuzzy <- addmf(modelo_fuzzy,"output",1,"High","trimf", c(50, 100, 100))
+create_fuzzy_outputs <- function(fuzzy_model){
+  fuzzy_model <- addvar(fuzzy_model,"output","Output MODEL", 0:100)
+  fuzzy_model <- addmf(fuzzy_model,"output",1,"Low","trimf", c(0, 0, 50))
+  fuzzy_model <- addmf(fuzzy_model,"output",1,"Medium","trimf", c(0, 50, 100))
+  fuzzy_model <- addmf(fuzzy_model,"output",1,"High","trimf", c(50, 100, 100))
+ return(fuzzy_model)
+}
+
+
 
 # Create Inputs
-i_mf <- 1
-for(i in 1:length(n_col_features)) {
-  bx <- bx_values(data_per_day, n_col_features[i])
 
-  modelo_fuzzy <- addvar(modelo_fuzzy,"input", paste("InputsZERO_",colnames(data_per_day)[n_col_features[i]]), min(bx$zero):max(bx$zero))
-  modelo_fuzzy <- addmf(modelo_fuzzy,"input",i_mf,"a3","trimf", c(bx$zero[1], bx$zero[1],bx$zero[2]))
-  modelo_fuzzy <- addmf(modelo_fuzzy,"input",i_mf,"a2","trimf", c(bx$zero[1], bx$zero[2],bx$zero[3]))
-  modelo_fuzzy <- addmf(modelo_fuzzy,"input",i_mf,"1","trimf", c(bx$zero[2], bx$zero[3],bx$zero[4]))
-  modelo_fuzzy <- addmf(modelo_fuzzy,"input",i_mf,"b2","trimf", c(bx$zero[3], bx$zero[4],bx$zero[5]))
-  modelo_fuzzy  <- addmf(modelo_fuzzy,"input",i_mf,"b3","trimf", c(bx$zero[4], bx$zero[5],bx$zero[5]))
+create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero"){
+  i_mf <- 1
+  for(i in 1:length(n_col_features)) {
+    bx <- bx_values(dataset, n_col_features[i])
+    fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[n_col_features[i]], min(bx$zero):max(bx$zero))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"a3","trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"a2","trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"1","trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"b2","trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
+    fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,"b3","trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
 
-  i_mf <- i_mf + 1
+    i_mf <- i_mf + 1
+  }
+
+ return(fuzzy_model)
 }
+
 
 # Create Rules
 
+rules <- create_fuzzy_rules(data_per_day)
+
+modelo_fuzzy <- addrule(modelo_fuzzy,rules)
+
+# Conc
+
+data_test <- data_per_day[200,n_col_features]
+
+modelo_teste <- newfis("modelo_teste")
+modelo_teste <- create_fuzzy_inputs(modelo_teste,data_per_day,"zero")
+modelo_teste <- create_fuzzy_outputs(modelo_teste)
+rules_teste <- create_fuzzy_rules(data_per_day)
+modelo_teste <- addrule(modelo_teste,rules_teste)
 
 
-showfis(modelo_fuzzy)
+data_input <- data_test
+
+
+data_input <- data.matrix(data_input)
+
+data_input <- matrix(data_input,2)
+
+EV <- evalfis(data_input,modelo_teste)
+rm(data_input)
+fis_show <- showfis(modelo_teste)
+
+# Input_data <- matrix((1:2),1,2)
+# fis <- tipper()
+# showfis(fis)
+# evalfis(Input_data, fis

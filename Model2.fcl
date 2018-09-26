@@ -38,17 +38,21 @@ ACCU : MAX;
 DEFAULT := nan;
 END_DEFUZZIFY
 
-RULEBLOCK
+RULEBLOCK 
 AND : MIN;
 OR : MAX;
 ACT : MIN;
 
-RULE 1 : if InputVAR1 is a3 or InputVAR1 is b3 then Output is Low with 0.5
-RULE 2 : if InputVAR1 is a2 or InputVAR1 is b2 then Output is Medium with 0.5
-RULE 3 : if InputVAR1 is ONE then Output is High with 0.5
-RULE 4 : if InputVAR2 is a3 or InputVAR2 is b3 then Output is Low with 0.5
-RULE 5 : if InputVAR2 is a2 or InputVAR2 is b2 then Output is Medium with 0.5
-RULE 6 : if InputVAR2 is ONE then Output is High with 0.5
+RULE 1 : if InputVAR1 is a3 then Output is Low with 0.9
+RULE 2 : if InputVAR1 is a2 then Output is Medium with 0.9
+RULE 3 : if InputVAR1 is ONE then Output is High with 0.9
+RULE 4 : if InputVAR1 is b2 then Output is Medium with 0.9
+RULE 5 : if InputVAR1 is b3 then Output is Low with 0.9
+RULE 6 : if InputVAR2 is a3 then Output is Low with 0.9
+RULE 7 : if InputVAR2 is a2 then Output is Medium with 0.9
+RULE 8 : if InputVAR2 is ONE then Output is High with 0.9
+RULE 9 : if InputVAR2 is b2 then Output is Medium with 0.9
+RULE 10 : if InputVAR2 is b3 then Output is Low with 0.9
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK
