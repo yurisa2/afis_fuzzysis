@@ -48,6 +48,7 @@ bp_1 <- boxplot(obj_data[which(obj_data[,nbin]==1) ,ncoluna], plot=F)
 bp_0$stats
 bp_1$stats
 
+
 bp <- cbind(bp_0$stats,bp_1$stats)
 colnames(bp) <- c("zero","one")
 return(bp)
@@ -64,10 +65,9 @@ genmf("rule3a", 0:50, c(0, 25, 50, 50))
 
 modelo_fuzzy <- newfis("modelo")
 
-fis_MF <- addvar(modelo_fuzzy,"input", 9, 0:50)
-rule3a <- genmf("trimf", c(0, 25, 50))
-modelo_fuzzy <- addMF(modelo_fuzzy, "input", 1, prec_ok) #Parei Aqui
-rule3b <- genmf("trimf", c(0, 25, 50))
-rule2a <- genmf("trimf", c(0, 25, 50))
-rule2b <- genmf("trimf", c(0, 25, 50))
-rule1 <- genmf("trimf", c(0, 25, 50))
+fis_MF <- addvar(modelo_fuzzy,"input", 9, 0:100)
+mf3a <- addmf(fis_MF,"input",1,"emeefe","trimf", c(0, 25, 50))
+mf3b <- addmf(fis_MF,"input",2,"emeefe","trimf", c(0, 25, 50))
+mf2a <- addmf(fis_MF,"input",3,"emeefe","trimf", c(0, 25, 50))
+mf2b <- addmf(fis_MF,"input",4,"emeefe","trimf", c(0, 25, 50))
+mf1  <- addmf(fis_MF,"input",5,"emeefe","trimf", c(0, 25, 50))
