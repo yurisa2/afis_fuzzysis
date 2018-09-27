@@ -37,8 +37,8 @@ data_per_month <- aggregate(data_per_month[,4:ncol(data_per_month)-1], by=list(d
 data_per_month <- data_per_month[,c(1,3,4,5,12,13,14,16)]
 
 # Data Setting
-# n_col_features <- c(1,2,3,10,11,12,13,14,15) # Define colunas para estudo;
-n_col_features <- c(1,2) # Define colunas para estudo;
+n_col_features <- c(1,2,3,10,11,12,13,14,15) # Define colunas para estudo;
+# n_col_features <- c(1,2) # Define colunas para estudo;
 nbin <- 19 # Define a Coluna Binária
 # ncoluna <- 12
 
@@ -87,8 +87,7 @@ create_fuzzy_rules <- function(dataset) {
   {
     feature_weight <- weight_list_n(data_per_day,nbin)[n_col_features[i]]
     m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
-    # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0
-    m[j:(j+4),(total_col-1)] <- 1
+    m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0
     m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
     j <- j + 5 # Goto Next 5 Lines
   }
@@ -142,13 +141,19 @@ modelo_fuzzy <- addrule(modelo_fuzzy,rules)
 
 # Conc
 
-data_test <- data_per_day[200,n_col_features]
+data_test <- data_per_day[2200:2319,n_col_features]
 
-modelo_teste <- newfis("modelo_teste")
-modelo_teste <- create_fuzzy_inputs(modelo_teste,data_per_day,"zero")
-modelo_teste <- create_fuzzy_outputs(modelo_teste)
+modelo_zero <- newfis("modelo_zero")
+modelo_zero <- create_fuzzy_inputs(modelo_zero,data_per_day,"zero")
+modelo_zero <- create_fuzzy_outputs(modelo_zero)
 rules_teste <- create_fuzzy_rules(data_per_day)
-modelo_teste <- addrule(modelo_teste,rules_teste)
+modelo_zero <- addrule(modelo_zero,rules_teste)
+
+modelo_one <- newfis("modelo_one")
+modelo_one <- create_fuzzy_inputs(modelo_one,data_per_day,"one")
+modelo_one <- create_fuzzy_outputs(modelo_one)
+rules_teste <- create_fuzzy_rules(data_per_day)
+modelo_one <- addrule(modelo_one,rules_teste)
 
 
 data_input <- data_test
@@ -157,9 +162,12 @@ data_input <- data_test
 data_input <- data.matrix(data_input)
 # data_input <- matrix(c(25.5,75.5),2,1)
 # data_input <- matrix(data_input,2)
-EV <- evalfis(data_input,modelo_teste)
+EVzero <- evalfis(data_input,modelo_zero)
+EVone <- evalfis(data_input,modelo_one)
 
-# fis_show <- showfis(modelo_teste)
+total <- cbind(EVzero,EVone)
+
+# fis_show <- showfis(modelo_zero)
 
 # Input_data <- matrix((1:2),1,2)
 # fis <- tipper()
