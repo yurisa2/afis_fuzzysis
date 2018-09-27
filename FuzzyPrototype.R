@@ -9,6 +9,8 @@ library(useful)
 library(corrplot)
 library(FuzzyR)
 
+options(warn=-1)
+
 
 data <- read.csv("dias_horas_full.csv")
 
@@ -48,7 +50,7 @@ colnames(data_per_day_deltas) <- paste0("delta_",colnames(data_per_day_deltas))
 
 data_per_day <- cbind(data_per_day,data_per_day_deltas)
 str(data_per_day)
-
+data_per_day <- tail(data_per_day, n=400)
 # Shifts de resultado
 data_per_day <- shift.column(data=data_per_day, columns="precipitacao_mm", newNames="precipitacao_mm_1",len=1)
 data_per_day <- shift.column(data=data_per_day, columns="precipitacao_mm", newNames="precipitacao_mm_1_bin",len=1)
@@ -117,7 +119,7 @@ create_fuzzy_rules <- function(dataset) {
   j <- 1
   for(i in 1:length(n_col_features))
   {
-    feature_weight <- weight_list_n(data_per_day,nbin)[n_col_features[i]]
+    feature_weight <- weight_list_n(dataset,nbin)[n_col_features[i]]
     m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
     # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
     m[j:(j+4),(total_col-1)] <- feature_weight
