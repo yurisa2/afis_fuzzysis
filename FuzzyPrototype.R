@@ -15,9 +15,39 @@ data <- read.csv("dias_horas_full.csv")
 data$Dia <- as.Date(data$Dia)
 # data <- data[1:5000,] # para nao fritar CPU
 
-
 # Data Por dia
 data_per_day <- aggregate(data[,4:ncol(data)], by=list(data$Dia), FUN=sum,na.rm=TRUE)
+
+data_per_day$temp_max_c <- NULL
+data_per_day$temp_min_c  <- NULL
+data_per_day$tem_max_pto_orvalho_c  <- NULL
+data_per_day$tempo_min_pto_orvalho_c  <- NULL
+data_per_day$umid_rel_ar_max_pctg  <- NULL
+data_per_day$umid_rel_ar_min_pctg  <- NULL
+data_per_day$pressao_atmosferica_max_hpa  <- NULL
+data_per_day$pressao_atmosferica_min_hpa  <- NULL
+
+data_per_day_max <- aggregate(data[,4:ncol(data)], by=list(data$Dia), FUN=max,na.rm=TRUE)
+data_per_day_min <- aggregate(data[,4:ncol(data)], by=list(data$Dia), FUN=min,na.rm=TRUE)
+data_per_day_deltas <- data_per_day_max - data_per_day_min
+
+data_per_day_deltas$temp_max_c <- NULL
+data_per_day_deltas$temp_min_c  <- NULL
+data_per_day_deltas$tem_max_pto_orvalho_c  <- NULL
+data_per_day_deltas$tempo_min_pto_orvalho_c  <- NULL
+data_per_day_deltas$umid_rel_ar_max_pctg  <- NULL
+data_per_day_deltas$umid_rel_ar_min_pctg  <- NULL
+data_per_day_deltas$pressao_atmosferica_max_hpa  <- NULL
+data_per_day_deltas$pressao_atmosferica_min_hpa  <- NULL
+data_per_day_deltas$precipitacao_mm  <- NULL
+data_per_day_deltas$delta_vento_raj_max_ms  <- NULL
+data_per_day_deltas[,1]  <- NULL
+
+colnames(data_per_day_deltas) <- paste0("delta_",colnames(data_per_day_deltas))
+
+
+data_per_day <- cbind(data_per_day,data_per_day_deltas)
+str(data_per_day)
 
 # Shifts de resultado
 data_per_day <- shift.column(data=data_per_day, columns="precipitacao_mm", newNames="precipitacao_mm_1",len=1)
@@ -38,7 +68,8 @@ data_per_month <- aggregate(data_per_month[,4:ncol(data_per_month)-1], by=list(d
 data_per_month <- data_per_month[,c(1,3,4,5,12,13,14,16)]
 
 # Data Setting
-n_col_features <- c(1,2,3,10,11,12,13,14,15) # Define colunas para estudo;
+n_col_features <- 1:17 # Define colunas para estudo;
+# str(data_per_day)
 # n_col_features <- c(1,2) # Define colunas para estudo;
 nbin <- 19 # Define a Coluna Binária
 # ncoluna <- 12
@@ -89,8 +120,8 @@ create_fuzzy_rules <- function(dataset) {
     feature_weight <- weight_list_n(data_per_day,nbin)[n_col_features[i]]
     m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
     # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
-    # m[j:(j+4),(total_col-1)] <- feature_weight
-    m[j:(j+4),(total_col-1)] <- 1
+    m[j:(j+4),(total_col-1)] <- feature_weight
+    # m[j:(j+4),(total_col-1)] <- 1
     m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
     j <- j + 5 # Goto Next 5 Lines
   }
@@ -118,11 +149,11 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero"){
   for(i in 1:length(n_col_features)) {
     bx <- bx_values(dataset, n_col_features[i])
     fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[n_col_features[i]], c(min(bx$zero),max(bx$zero)))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("a3",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("a2",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("1",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("b2",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
-    fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,paste("b3",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("a3",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("a2",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("1",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("b2",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
+    fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,paste0("b3",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
 
     i_mf <- i_mf + 1
   }
@@ -167,6 +198,20 @@ total <- cbind(EVzero,EVone,as.character(data_test2),EVresult_fis)
 
 result_total <- ifelse(total[,3] == total[,4],1,0)
 result_1 <- ifelse(total[which(total[,3] == 1),3] == total[which(total[,3] == 1),4],1,0)
+result_0 <- ifelse(total[which(total[,3] == 0),3] == total[which(total[,3] == 0),4],1,0)
 
 mean(result_total, na.rm=T) #0.579227388387694 | MEAN
-mean(result_1 )#0.399916422900125 | MEAN
+mean(result_1)#0.399916422900125 | MEAN
+mean(result_0)#0.810950413223141 | MEAN
+# 0.58004158004158
+# 0.393230254910155
+# 0.810950413223141
+
+
+
+
+#
+# str(total)
+#
+# total <- data.frame(as.numeric(total))
+# boxplot(as.numeric(total[,2])~total[,3]) #Hangover Analysis
