@@ -1,7 +1,8 @@
 PATH <- 'C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem'
-PATH <- '/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis'
+# PATH <- '/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis'
 setwd(PATH)
 
+# install.packages("shiny")
 
 library(ggplot2)
 library(useful)
@@ -16,7 +17,7 @@ data$Dia <- as.Date(data$Dia)
 
 
 # Data Por dia
-data_per_day <- aggregate(data[,4:ncol(data)], by=list(data$Dia), FUN=mean,na.rm=TRUE)
+data_per_day <- aggregate(data[,4:ncol(data)], by=list(data$Dia), FUN=sum,na.rm=TRUE)
 
 # Shifts de resultado
 data_per_day <- shift.column(data=data_per_day, columns="precipitacao_mm", newNames="precipitacao_mm_1",len=1)
@@ -87,7 +88,9 @@ create_fuzzy_rules <- function(dataset) {
   {
     feature_weight <- weight_list_n(data_per_day,nbin)[n_col_features[i]]
     m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
-    m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0
+    # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
+    # m[j:(j+4),(total_col-1)] <- feature_weight
+    m[j:(j+4),(total_col-1)] <- 1
     m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
     j <- j + 5 # Goto Next 5 Lines
   }
@@ -98,8 +101,6 @@ create_fuzzy_rules <- function(dataset) {
 ma_test <-matrix(0L, nrow = 5, ncol = 9)  # @nrussell
 ma_test[,2] <- c(1,2,3,4,5)
 
-
-
 #Create Model and OutPut
 modelo_fuzzy <- newfis("modelo_zero")
 
@@ -108,13 +109,10 @@ create_fuzzy_outputs <- function(fuzzy_model){
   fuzzy_model <- addmf(fuzzy_model,"output",1,"Low","trimf", c(0, 0, 50))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"Medium","trimf", c(0, 50, 100))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"High","trimf", c(50, 100, 100))
- return(fuzzy_model)
+  return(fuzzy_model)
 }
 
-
-
 # Create Inputs
-
 create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero"){
   i_mf <- 1
   for(i in 1:length(n_col_features)) {
@@ -129,19 +127,19 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero"){
     i_mf <- i_mf + 1
   }
 
- return(fuzzy_model)
+  return(fuzzy_model)
 }
 
 
 # Create Rules
-
 rules <- create_fuzzy_rules(data_per_day)
 
 modelo_fuzzy <- addrule(modelo_fuzzy,rules)
 
 # Conc
 
-data_test <- data_per_day[2200:2319,n_col_features]
+data_test <- data_per_day[,n_col_features]
+data_test2 <- data_per_day[,nbin]
 
 modelo_zero <- newfis("modelo_zero")
 modelo_zero <- create_fuzzy_inputs(modelo_zero,data_per_day,"zero")
@@ -158,18 +156,17 @@ modelo_one <- addrule(modelo_one,rules_teste)
 
 data_input <- data_test
 
-
 data_input <- data.matrix(data_input)
-# data_input <- matrix(c(25.5,75.5),2,1)
-# data_input <- matrix(data_input,2)
-EVzero <- evalfis(data_input,modelo_zero)
-EVone <- evalfis(data_input,modelo_one)
 
-total <- cbind(EVzero,EVone)
+EVzero <- round(evalfis(data_input,modelo_zero),digits = 2)
+EVone <- round(evalfis(data_input,modelo_one),digits = 2)
 
-# fis_show <- showfis(modelo_zero)
+EVresult_fis <- ifelse(EVone > 50,1,0)
 
-# Input_data <- matrix((1:2),1,2)
-# fis <- tipper()
-# showfis(fis)
-# evalfis(Input_data, fis
+total <- cbind(EVzero,EVone,as.character(data_test2),EVresult_fis)
+
+result_total <- ifelse(total[,3] == total[,4],1,0)
+result_1 <- ifelse(total[which(total[,3] == 1),3] == total[which(total[,3] == 1),4],1,0)
+
+mean(result_total, na.rm=T) #0.579227388387694 | MEAN
+mean(result_1 )#0.399916422900125 | MEAN
