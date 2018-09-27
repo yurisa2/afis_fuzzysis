@@ -1,4 +1,5 @@
 PATH <- 'C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem'
+PATH <- '/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis'
 setwd(PATH)
 
 
@@ -86,7 +87,8 @@ create_fuzzy_rules <- function(dataset) {
   {
     feature_weight <- weight_list_n(data_per_day,nbin)[n_col_features[i]]
     m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
-    m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0
+    # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0
+    m[j:(j+4),(total_col-1)] <- 1
     m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
     j <- j + 5 # Goto Next 5 Lines
   }
@@ -103,7 +105,7 @@ ma_test[,2] <- c(1,2,3,4,5)
 modelo_fuzzy <- newfis("modelo_zero")
 
 create_fuzzy_outputs <- function(fuzzy_model){
-  fuzzy_model <- addvar(fuzzy_model,"output","Output MODEL", 0:100)
+  fuzzy_model <- addvar(fuzzy_model,"output","Output MODEL", c(0,100))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"Low","trimf", c(0, 0, 50))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"Medium","trimf", c(0, 50, 100))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"High","trimf", c(50, 100, 100))
@@ -118,12 +120,12 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero"){
   i_mf <- 1
   for(i in 1:length(n_col_features)) {
     bx <- bx_values(dataset, n_col_features[i])
-    fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[n_col_features[i]], min(bx$zero):max(bx$zero))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"a3","trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"a2","trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"1","trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
-    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,"b2","trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
-    fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,"b3","trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
+    fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[n_col_features[i]], c(min(bx$zero),max(bx$zero)))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("a3",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("a2",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("1",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
+    fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste("b2",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
+    fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,paste("b3",colnames(dataset)[n_col_features[i]]),"trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
 
     i_mf <- i_mf + 1
   }
@@ -153,12 +155,11 @@ data_input <- data_test
 
 
 data_input <- data.matrix(data_input)
-
-data_input <- matrix(data_input,2)
-
+# data_input <- matrix(c(25.5,75.5),2,1)
+# data_input <- matrix(data_input,2)
 EV <- evalfis(data_input,modelo_teste)
-rm(data_input)
-fis_show <- showfis(modelo_teste)
+
+# fis_show <- showfis(modelo_teste)
 
 # Input_data <- matrix((1:2),1,2)
 # fis <- tipper()
