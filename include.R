@@ -116,7 +116,7 @@ result_matrix <- function(dataset,data_test,features,nbin) {
 
   return_result_matrix <- cbind(evaluation,
     Benchmark=as.character(dataset[,nbin]),
-    Eval0=ifelse(evaluation$FIS0 > 50,0,1),
+    Eval0=ifelse(evaluation$FIS0 > 50,1,0),
     Eval1=ifelse(evaluation$FIS1 > 50,1,0)
   )
   # return_result_matrix <- data.frame(return_result_matrix)
@@ -127,14 +127,16 @@ result_matrix <- function(dataset,data_test,features,nbin) {
 accuracy_fis <- function(dataset,data_test,features,nbin) {
   total <- result_matrix(dataset,data_test,features,nbin)
 
-
+# FAZER A PORRA DA ESTATISTICA DIREITO
   daB <- data_test
 
   total <- cbind(total,as.character(daB),ifelse(total[,2] > 50,1,0))
 
+  zero_rows = which(total$Eval0 == 0)
+
   result_total <- ifelse(total[,3] == total[,4],1,0)
-  result_1 <- ifelse(total[which(total[,3] == 1),4],1,0)
-  result_0 <- ifelse(total[which(total[,3] == 0),4],1,0)
+  result_1 <- ifelse(,1,0)
+  result_0 <- ifelse(,1,0)
 
 
   mean_total <- mean(result_total, na.rm=T)
