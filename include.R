@@ -59,7 +59,7 @@ ma_test[,2] <- c(1,2,3,4,5)
 
 #Create Model and OutPut
 
-create_fuzzy_outputs <- function(fuzzy_model){
+create_fuzzy_outputs <- function(fuzzy_model, plots = F){
   fuzzy_model <- addvar(fuzzy_model,"output","Output MODEL", c(0,100))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"Low","trimf", c(0, 0, 50))
   fuzzy_model <- addmf(fuzzy_model,"output",1,"Medium","trimf", c(0, 50, 100))
@@ -68,17 +68,25 @@ create_fuzzy_outputs <- function(fuzzy_model){
 }
 
 # Create Inputs
-create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero",features,nbin){
+create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero",features,nbin, plots = F){
+
   i_mf <- 1
   for(i in 1:length(features)) {
     bx <- bx_values(dataset, features[i],nbin)
+    feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
+
     fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[features[i]], c(min(bx$zero),max(bx$zero)))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("a3",colnames(dataset)[features[i]]),"trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("a2",colnames(dataset)[features[i]]),"trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("1",colnames(dataset)[features[i]]),"trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("b2",colnames(dataset)[features[i]]),"trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
     fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,paste0("b3",colnames(dataset)[features[i]]),"trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
-    plotmf(fuzzy_model, "input", i_mf,main =paste("Pertinencia",bx_class,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
+    if(plots == T){
+      # par(mfrow=c(2,2))
+      # plotmf(fuzzy_model, "input", i_mf,main =paste("Pertinencia",bx_class,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
+      # boxplot(bx,main =paste("Diff Dist",bx_class,feature_weight,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
+      # mtext("My 'Title' in a strange place", side = 3, line = -21, outer = TRUE)
+    }
     i_mf <- i_mf + 1
   }
 
@@ -87,18 +95,26 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero",features,n
 
 
 ######## RETURNS 2col, [FIS0,FIS1] ########
-fuz_sis <- function(dataset,data_test,features,nbin){
+fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
+  if(missing(plots)) plots <- F
+
+  data_test <- data.matrix(data_test)
+  data_test <- data_test[,features]
+
   model_zero <- newfis("model_zero")
-  model_zero <- create_fuzzy_inputs(model_zero,dataset,"zero",features,nbin)
+  model_zero <- create_fuzzy_inputs(model_zero,dataset,"zero",features,nbin, plots)
   model_zero <- create_fuzzy_outputs(model_zero)
   rules <- create_fuzzy_rules(dataset,features)
   model_zero <- addrule(model_zero,rules)
 
+
+
   model_one <- newfis("model_one")
-  model_one <- create_fuzzy_inputs(model_one,dataset,"one",features,nbin)
-  model_one <- create_fuzzy_outputs(model_one)
+  model_one <- create_fuzzy_inputs(model_one,dataset,"one",features,nbin, plots)
+  model_one <- create_fuzzy_outputs(model_one, plots = F)
   rules <- create_fuzzy_rules(dataset,features)
   model_one <- addrule(model_one,rules)
+
 
   EVzero <- evalfis(data_test,model_zero)
   EVone <- evalfis(data_test,model_one)
@@ -107,15 +123,21 @@ fuz_sis <- function(dataset,data_test,features,nbin){
   total <- cbind(EVzero,EVone)
   colnames(total) <- c("FIS0","FIS1")
 
+
+  if(plots == T){
+    plots_afis(model_zero,model_one,bx)
+
+  }
+
   return(data.frame(total))
 }
 ############################################
 
-result_matrix <- function(dataset,data_test,features,nbin) {
+result_matrix <- function(dataset,data_test,features,nbin, plots = F) {
+  if(missing(plots)) plots <- F
   d_bench <- data_test
-  data_test <- data.matrix(data_test)
-  data_test <- data_test[,features]
-  evaluation <- fuz_sis(dataset,data_test,features,nbin)
+
+  evaluation <- fuz_sis(dataset,data_test,features,nbin, plots)
   # EVresult_fis <- ifelse(evaluation$one > 50,1,0)
 
   return_result_matrix <- cbind(evaluation,
@@ -128,10 +150,12 @@ result_matrix <- function(dataset,data_test,features,nbin) {
   # return(total)
 }
 
-accuracy_fis <- function(dataset,data_test,features,nbin) {
-  total <- result_matrix(dataset,data_test,features,nbin)
+accuracy_fis <- function(dataset,data_test,features,nbin, plots = F) {
+  if(missing(plots)) plots <- F
 
-# FAZER A PORRA DA ESTATISTICA DIREITO
+  total <- result_matrix(dataset,data_test,features,nbin, plots = F)
+
+  # FAZER A PORRA DA ESTATISTICA DIREITO
   daB <- data_test
 
   total <- cbind(total,as.character(daB),ifelse(total[,2] > 50,1,0))
@@ -152,4 +176,16 @@ accuracy_fis <- function(dataset,data_test,features,nbin) {
   colnames(el_return) <- c("% Total","% 0","% 1")
 
   return(el_return)
+}
+
+plots_afis <- function(model_zero,model_one,bx) {
+  print(nrow(model_one$input))
+  # plotmf(model_zero,"input")
+
+
+  # par(mfrow=c(2,2))
+  # plotmf(fuzzy_model, "input", i_mf,main =paste("Pertinencia",bx_class,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
+  # boxplot(bx,main =paste("Diff Dist",bx_class,feature_weight,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
+  # mtext("My 'Title' in a strange place", side = 3, line = -21, outer = TRUE)
+
 }
