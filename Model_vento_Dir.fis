@@ -1,0 +1,68 @@
+[System]
+Name='vento_dir'
+Type='mamdani'
+Version=3.1
+NumInputs=1
+NumOutputs=4
+NumRules=5
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='ventodir'
+Range=[0.000 360.000]
+NumMFs=5
+MF1='norte_in1':'trimf',[0.000 0.000 90.000]
+MF2='leste_in':'trimf',[0.000 90.000 180.000]
+MF3='sul_in':'trimf',[90.000 180.000 270.000]
+MF4='oeste_in':'trimf',[180.000 270.000 360.000]
+MF5='norte_in2':'trimf',[270.000 360.000 360.000]
+
+
+[Output1]
+Name='norte_ramp'
+Range=[0.000 1.000]
+Default=nan
+LockValid=0
+LockRange=0
+NumMFs=1
+MF1='norte_out':'trimf',[0.000 1.000 1.000]
+
+[Output2]
+Name='oeste_ramp'
+Range=[0.000 1.000]
+Default=nan
+LockValid=0
+LockRange=0
+NumMFs=1
+MF1='oeste_out':'trimf',[0.000 1.000 1.000]
+
+[Output3]
+Name='sul_ramp'
+Range=[0.000 1.000]
+Default=nan
+LockValid=0
+LockRange=0
+NumMFs=1
+MF1='sul_out':'trimf',[0.000 1.000 1.000]
+
+[Output4]
+Name='leste_ramp'
+Range=[0.000 1.000]
+Default=nan
+LockValid=0
+LockRange=0
+NumMFs=1
+MF1='leste_out':'trimf',[0.000 1.000 1.000]
+
+
+[Rules]
+1 , 1 0 0 0 (1) : 1
+5 , 1 0 0 0 (1) : 1
+2 , 0 0 0 1 (1) : 1
+3 , 0 0 1 0 (1) : 1
+4 , 0 1 0 0 (1) : 1
+
