@@ -1,4 +1,5 @@
 library(FuzzyR)
+library(caret)
 
 #Functions
 normalize <- function(x) {
@@ -18,7 +19,9 @@ bx_values <- function(obj_data, ncoluna, nbin){
 }
 
 weight_list_n <- function(dataset, nbin,features){
+  dataset <- dataset[complete.cases(dataset),]
   for(i in features) {
+    # for(i in ncol(dataset)) {
 
     if(!exists("list_w")){ list_w <- ""}
 
@@ -29,6 +32,8 @@ weight_list_n <- function(dataset, nbin,features){
   }
 
   list_w <- normalize(as.numeric(list_w));
+
+  # print(list_w)
 
   return(as.numeric(list_w))
 }
@@ -73,7 +78,7 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero",features,n
   i_mf <- 1
   for(i in 1:length(features)) {
     bx <- bx_values(dataset, features[i],nbin)
-    feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
+    # feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
     if(bx_class == "zero") max_min <- c(min(bx$zero),max(bx$zero))
     if(bx_class == "one") max_min <- c(min(bx$one),max(bx$one))
 
@@ -83,12 +88,7 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero",features,n
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("1",colnames(dataset)[features[i]]),"trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("b2",colnames(dataset)[features[i]]),"trimf", c(bx[3,bx_class], bx[4,bx_class],bx[5,bx_class]))
     fuzzy_model  <- addmf(fuzzy_model,"input",i_mf,paste0("b3",colnames(dataset)[features[i]]),"trimf", c(bx[4,bx_class], bx[5,bx_class],bx[5,bx_class]))
-    if(plots == T){
-      # par(mfrow=c(2,2))
-      # plotmf(fuzzy_model, "input", i_mf,main =paste("Pertinencia",bx_class,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
-      # boxplot(bx,main =paste("Diff Dist",bx_class,feature_weight,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
-      # mtext("My 'Title' in a strange place", side = 3, line = -21, outer = TRUE)
-    }
+
     i_mf <- i_mf + 1
   }
 
@@ -109,7 +109,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
   rules <- create_fuzzy_rules(dataset,features)
   model_zero <- addrule(model_zero,rules)
 
-
+  # print(rules) # DEBUG
 
   model_one <- newfis("model_one")
   model_one <- create_fuzzy_inputs(model_one,dataset,"one",features,nbin, plots)
@@ -117,6 +117,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
   rules <- create_fuzzy_rules(dataset,features)
   model_one <- addrule(model_one,rules)
 
+  # print(rules) # DEBUG
 
   EVzero <- evalfis(data_test,model_zero)
   EVone <- evalfis(data_test,model_one)
@@ -126,10 +127,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
   colnames(total) <- c("FIS0","FIS1")
 
 
-  if(plots == T){
-    plots_afis(model_zero,model_one,nbin,dataset,features)
-
-  }
+  if(plots == T) plots_afis(dataset,features,nbin,model_zero,model_one)
 
   return(data.frame(total))
 }
@@ -152,49 +150,59 @@ result_matrix <- function(dataset,data_test,features,nbin, plots = F) {
   # return(total)
 }
 
-accuracy_fis <- function(dataset,data_test,features,nbin, plots = F) {
-  if(missing(plots)) plots <- F
+accuracy_fis <- function(
+  dataset,
+  data_test,
+  features,
+  nbin,
+  plots = F,
+  method = "only_1") {
+    if(missing(plots)) plots <- F
 
-  total <- result_matrix(dataset,data_test,features,nbin, plots = F)
+    total <- result_matrix(dataset,data_test,features,nbin,plots)
 
-  # FAZER A PORRA DA ESTATISTICA DIREITO
-  daB <- data_test
-
-  total <- cbind(total,as.character(daB),ifelse(total[,2] > 50,1,0))
-
-  zero_rows = which(total$Eval0 == 0)
-
-  result_total <- ifelse(total[,3] == total[,4],1,0)
-  result_1 <- ifelse(,1,0)
-  result_0 <- ifelse(,1,0)
-
-
-  mean_total <- mean(result_total, na.rm=T)
-  mean1 <- mean(result_1)
-  mean0 <- mean(result_0)
-
-  el_return <- cbind(mean_total,mean0,mean1)
-  el_return <- data.frame(el_return)
-  colnames(el_return) <- c("% Total","% 0","% 1")
-
-  return(el_return)
-}
-
-plots_afis <- function(model_zero,model_one,nbin,dataset,features) {
-  for(i in 1:length(model_one$input)) {
-    col_name_var <- model_one$input[[i]]$name
-    col_num_var <- which( colnames(dataset)==col_name_var )
-
-    par(mfrow=c(2,2))
-
-    feature_weight <- round(weight_list_n(dataset,nbin,features)[features[col_num_var]],3)
-
-    plotmf(model_one, "input", i,main =paste("ONE",model_one$input[[i]]$name))
-    plotmf(model_zero, "input", i,main =paste("ZERO",model_zero$input[[i]]$name))
-    boxplot(dataset[,col_num_var]~dataset[,nbin],main =paste("Weight",feature_weight))
-    hist(dataset[,col_num_var],main = paste("Dist.",model_one$input[[i]]$name))
-    # mtext("My 'Title' in a strange place", side = 3, line = -21, outer = TRUE)
-
+    if(method == "only_1") prove <- factor(total$Eval1)
+    if(method == "only_0") prove <- factor(total$Eval0)
+    if(method == "conservative")
+    {
+      total$col_sum <- total$Eval0 + total$Eval1
+      if(total$col_sum == 2) {
+        total$col_sum <- 0
+        prove <- total$col_sum
+      } else {
+        prove <- factor(total$Eval1)
+      }
+    }
+    if(method == "sc") # Super Conservative
+    {
+      total$cond_0 <- ifelse(total$Eval0 < 50,1,0)
+      total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
+      if(total$cond_0 == 1 && total$cond_1 == 1) {
+        total$result <- 1
+        prove <- total$result
+      } else {
+        total$result <- 0
+        prove <- factor(total$result)
+      }
     }
 
-}
+    conf_mat <- confusionMatrix(prove,factor(total$Benchmark))
+    return(conf_mat)
+  }
+
+  plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
+    for(i in 1:length(model_one$input)) {
+      col_name_var <- model_one$input[[i]]$name
+      col_num_var <- which( colnames(dataset)==col_name_var )
+
+      par(mfrow=c(2,2))
+
+      feature_weight <- round(weight_list_n(dataset,nbin,features)[col_num_var],3)
+
+      plotmf(model_one, "input", i,main =paste(col_num_var,"ONE",model_one$input[[i]]$name))
+      plotmf(model_zero, "input", i,main =paste(col_num_var,"ZERO",model_zero$input[[i]]$name))
+      boxplot(dataset[,col_num_var]~dataset[,nbin],main =paste(col_num_var,"Weight",feature_weight))
+      hist(dataset[,col_num_var],main = paste(col_num_var,"Dist.",model_one$input[[i]]$name))
+    }
+
+  }
