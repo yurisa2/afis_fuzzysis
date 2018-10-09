@@ -74,8 +74,10 @@ create_fuzzy_inputs <- function(fuzzy_model,dataset,bx_class = "zero",features,n
   for(i in 1:length(features)) {
     bx <- bx_values(dataset, features[i],nbin)
     feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
+    if(bx_class == "zero") max_min <- c(min(bx$zero),max(bx$zero))
+    if(bx_class == "one") max_min <- c(min(bx$one),max(bx$one))
 
-    fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[features[i]], c(min(bx$zero),max(bx$zero)))
+    fuzzy_model <- addvar(fuzzy_model,"input", colnames(dataset)[features[i]],max_min )
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("a3",colnames(dataset)[features[i]]),"trimf", c(bx[1,bx_class], bx[1,bx_class],bx[2,bx_class]))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("a2",colnames(dataset)[features[i]]),"trimf", c(bx[1,bx_class], bx[2,bx_class],bx[3,bx_class]))
     fuzzy_model <- addmf(fuzzy_model,"input",i_mf,paste0("1",colnames(dataset)[features[i]]),"trimf", c(bx[2,bx_class], bx[3,bx_class],bx[4,bx_class]))
@@ -125,7 +127,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
 
 
   if(plots == T){
-    plots_afis(model_zero,model_one,bx)
+    plots_afis(model_zero,model_one,nbin,dataset,features)
 
   }
 
@@ -178,14 +180,21 @@ accuracy_fis <- function(dataset,data_test,features,nbin, plots = F) {
   return(el_return)
 }
 
-plots_afis <- function(model_zero,model_one,bx) {
-  print(nrow(model_one$input))
-  # plotmf(model_zero,"input")
+plots_afis <- function(model_zero,model_one,nbin,dataset,features) {
+  for(i in 1:length(model_one$input)) {
+    col_name_var <- model_one$input[[i]]$name
+    col_num_var <- which( colnames(dataset)==col_name_var )
 
+    par(mfrow=c(2,2))
 
-  # par(mfrow=c(2,2))
-  # plotmf(fuzzy_model, "input", i_mf,main =paste("Pertinencia",bx_class,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
-  # boxplot(bx,main =paste("Diff Dist",bx_class,feature_weight,colnames(dataset)[features[i]]))    # plotmf(fuzzy_model, "input", i_mf)
-  # mtext("My 'Title' in a strange place", side = 3, line = -21, outer = TRUE)
+    feature_weight <- round(weight_list_n(dataset,nbin,features)[features[col_num_var]],3)
+
+    plotmf(model_one, "input", i,main =paste("ONE",model_one$input[[i]]$name))
+    plotmf(model_zero, "input", i,main =paste("ZERO",model_zero$input[[i]]$name))
+    boxplot(dataset[,col_num_var]~dataset[,nbin],main =paste("Weight",feature_weight))
+    hist(dataset[,col_num_var],main = paste("Dist.",model_one$input[[i]]$name))
+    # mtext("My 'Title' in a strange place", side = 3, line = -21, outer = TRUE)
+
+    }
 
 }

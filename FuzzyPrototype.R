@@ -1,4 +1,6 @@
-PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
+# PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
+PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
+
 setwd(PATH)
 
 source(file="include.R")
@@ -10,13 +12,8 @@ library(FuzzyR)
 
 options(warn=-1)
 
-
-winm5 <- read.csv("winm5.csv")
-
 data <- read.csv("dias_horas_full.csv")
 data$radiacao_global_kjm2  <- NULL
-
-
 
 data$Dia <- as.Date(data$Dia)
 # data <- data[4000:5000,] # para nao fritar CPU
@@ -51,7 +48,6 @@ data_per_day_deltas[,1]  <- NULL
 
 colnames(data_per_day_deltas) <- paste0("delta_",colnames(data_per_day_deltas))
 
-
 data_per_day <- cbind(data_per_day,data_per_day_deltas)
 # str(data_per_day)
 # data_per_day <- tail(data_per_day, n=400)
@@ -65,8 +61,8 @@ data_per_day[,1] <- NULL
 data_per_day$precipitacao_mm_1_bin <- ifelse(data_per_day$precipitacao_mm_1_bin > 0 , 1, 0)
 data_per_day$precipitacao_mm_1_bin <- factor(data_per_day$precipitacao_mm_1_bin)
 
-summary(data_per_day)
-str(data_per_day[complete.cases(data_per_day),])
+# summary(data_per_day)
+# str(data_per_day[complete.cases(data_per_day),])
 
 # Data Por Mes
 
@@ -78,49 +74,8 @@ data_per_month <- data_per_month[,c(1,3,4,5,12,13,14,16)]
 
 # Data Setting
 n_col_features <- 1:15 # Define colunas para estudo;
-# str(data_per_day)
-# n_col_features <- c(1,2) # Define colunas para estudo;
 nbin <- 17 # Define a Coluna Binária
-# ncoluna <- 12
 
-# Create Rules
+data_input <- data_per_day[sample(1:nrow(data_per_day),10),]
 
-# Conc
-
-data_test <- data_per_day[,n_col_features]
-data_test2 <- data_per_day[,nbin]
-
-data_input <- data_test
-
-data_input <- data.matrix(data_input)
-# #
-# evaluation <- fuz_sis(data_per_day,data_input,n_col_features,nbin)
-#
-#
-#
-# EVresult_fis <- ifelse(EVone > 50,1,0)
-#
-# total <- cbind(EVzero,EVone,as.character(data_test2),EVresult_fis)
-#
-# result_total <- ifelse(total[,3] == total[,4],1,0)
-# result_1 <- ifelse(total[which(total[,3] == 1),3] == total[which(total[,3] == 1),4],1,0)
-# result_0 <- ifelse(total[which(total[,3] == 0),3] == total[which(total[,3] == 0),4],1,0)
-
-# mean(result_total, na.rm=T) #0.579227388387694 | MEAN
-# mean(result_1)#0.399916422900125 | MEAN
-# mean(result_0)#0.810950413223141 | MEAN
-# 0.58004158004158
-# 0.393230254910155
-# 0.810950413223141
-
-
-result <- result_matrix(data_per_day,data_input,n_col_features,nbin)
-# accuracy_fis(data_per_day,data_input,n_col_features,nbin)
-
-# accuracy_fis(data_per_day,data_input,n_col_features,nbin)
-#
-
-# str(total)
-#
-# total <- data.frame(as.numeric(total))
-# boxplot(as.numeric(total[,2])~total[,3]) #Hangover Analysis
+result <- result_matrix(data_per_day,data_input,n_col_features,nbin, plots = F)
