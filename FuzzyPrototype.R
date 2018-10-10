@@ -1,6 +1,5 @@
-PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
-# PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
-
+# PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
+PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
 setwd(PATH)
 
 source(file="include.R")
@@ -66,14 +65,38 @@ nbin <- 51 # Define a Coluna Binária
 
 # summary(data_per_day[complete.cases(data_per_day),n_col_features])
 
-data_input <- data_per_day[sample(1:nrow(data_per_day),50),]
-
-# result <- result_matrix(data_per_day,data_input,n_col_features,nbin)
 data_per_day <- data_per_day[complete.cases(data_per_day),]
+data_per_day_orig <- data_per_day[complete.cases(data_per_day),]
+# data_per_day_orig[rand_start:rand_end,]
 
-rm(acc1); rm(acc0); rm(acc_c); rm(acc_sc)
+data_per_day_input <- data_per_day
+result_ma <- NULL
+train_size <- 180
+# rand_start <- sample(train_size:nrow(data_per_day),1)
 
-acc1 <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "only_1", plots=T)
-acc0 <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "only_0")
-acc_c <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "conservative")
-acc_sc <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "sc")
+
+for(i in 200:nrow(data_per_day_orig)) {
+  # Train Set for model
+
+  rand_start <- i
+  rand_end <- rand_start + train_size
+  data_per_day <- data_per_day_orig[rand_start:rand_end,]
+
+  # Test Set for model
+  input_size <- 0
+  input_start <- rand_end
+  input_end <- input_size + input_start
+  data_input <- data_per_day_input[input_start:input_end,]
+
+
+  result_ma_now <- result_matrix(data_per_day,data_input,n_col_features,nbin)
+
+  result_ma <- rbind(result_ma,result_ma_now)
+}
+
+# rm(acc1); rm(acc0); rm(acc_c); rm(acc_sc)
+
+# acc1 <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "only_1")
+# acc0 <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "only_0")
+# acc_c <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "conservative")
+# acc_sc <- accuracy_fis(data_per_day,data_input,n_col_features,nbin, method = "sc")

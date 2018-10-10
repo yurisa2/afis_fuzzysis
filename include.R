@@ -18,7 +18,7 @@ bx_values <- function(obj_data, ncoluna, nbin){
   return(data.frame(bp))
 }
 
-weight_list_n <- function(dataset, nbin,features){
+weight_list_n <- function(dataset, nbin, features){
   dataset <- dataset[complete.cases(dataset),]
   for(i in features) {
     # for(i in ncol(dataset)) {
@@ -27,6 +27,7 @@ weight_list_n <- function(dataset, nbin,features){
 
     data_0 <- dataset[which(dataset[,nbin]==0),i]
     data_1 <- dataset[which(dataset[,nbin]==1),i]
+
     rect <- ks.test(data_0,data_1)$statistic
     list_w[i] <- rect
   }
@@ -168,7 +169,7 @@ accuracy_fis <- function(
       total$col_sum <- total$Eval0 + total$Eval1
       if(total$col_sum == 2) {
         total$col_sum <- 0
-        prove <- total$col_sum
+        prove <- factor(total$col_sum)
       } else {
         prove <- factor(total$Eval1)
       }
@@ -179,7 +180,7 @@ accuracy_fis <- function(
       total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
       if(total$cond_0 == 1 && total$cond_1 == 1) {
         total$result <- 1
-        prove <- total$result
+        prove <- factor(total$result)
       } else {
         total$result <- 0
         prove <- factor(total$result)
@@ -190,7 +191,7 @@ accuracy_fis <- function(
     return(conf_mat)
   }
 
-  plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
+plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
     for(i in 1:length(model_one$input)) {
       col_name_var <- model_one$input[[i]]$name
       col_num_var <- which( colnames(dataset)==col_name_var )
@@ -204,5 +205,4 @@ accuracy_fis <- function(
       boxplot(dataset[,col_num_var]~dataset[,nbin],main =paste(col_num_var,"Weight",feature_weight))
       hist(dataset[,col_num_var],main = paste(col_num_var,"Dist.",model_one$input[[i]]$name))
     }
-
   }
