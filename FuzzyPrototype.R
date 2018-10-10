@@ -1,5 +1,5 @@
-# PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
-PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
+PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
+# PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
 setwd(PATH)
 
 source(file="include.R")
@@ -79,7 +79,8 @@ for(i in 200:nrow(data_per_day_orig)) {
   # Train Set for model
 
   rand_start <- i
-  rand_end <- rand_start + train_size
+  # rand_end <- rand_start + train_size
+  rand_end <- nrow(data_per_day_orig)
   data_per_day <- data_per_day_orig[rand_start:rand_end,]
 
   # Test Set for model
