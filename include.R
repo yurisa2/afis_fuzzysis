@@ -187,7 +187,7 @@ accuracy_fis <- function(
       }
     }
 
-    conf_mat <- confusionMatrix(prove,factor(total$Benchmark))
+    conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive = "1")
     return(conf_mat)
   }
 
@@ -206,3 +206,32 @@ plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
       hist(dataset[,col_num_var],main = paste(col_num_var,"Dist.",model_one$input[[i]]$name))
     }
   }
+
+
+
+
+  wind_fis <- newfis("wind_fis")
+  wind_fis <- addvar(wind_fis,"input", "wind_dir",c(0,360) )
+  wind_fis <- addmf(wind_fis,"input",1,"north_a","trimf",c(0,0,90))
+  wind_fis <- addmf(wind_fis,"input",1,"north_b","trimf",c(270,360,360))
+  wind_fis <- addmf(wind_fis,"input",1,"east","trimf",c(0,90,180))
+
+  wind_fis <- addvar(wind_fis,"output","North Level", c(0,100))
+  wind_fis <- addmf(wind_fis,"output",1,"Ramp","trimf", c(0, 100, 100 ))
+
+  wind_fis <- addvar(wind_fis,"output","East Level", c(0,100))
+  wind_fis <- addmf(wind_fis,"output",2,"Ramp east","trimf", c(0, 100, 100 ))
+
+  rule1 <- c(1,1,0,1,2)
+  rule2 <- c(2,1,0,1,2)
+  rule3 <- c(3,0,1,1,2)
+  rule <- rbind(rule1,rule2,rule3)
+rule <- matrix(rule,nrow = 3)
+wind_fis <- addrule(wind_fis,rule)
+
+plotmf(wind_fis,"input",1)
+
+showfis(wind_fis)
+
+showGUI(wind_fis)
+ evalfis(90,wind_fis)

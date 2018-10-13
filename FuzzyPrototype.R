@@ -1,5 +1,5 @@
-PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
-# PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
+# PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
+PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
 setwd(PATH)
 
 source(file="include.R")
@@ -71,16 +71,17 @@ data_per_day_orig <- data_per_day[complete.cases(data_per_day),]
 
 data_per_day_input <- data_per_day
 result_ma <- NULL
-train_size <- 180
+train_size <- 90
 # rand_start <- sample(train_size:nrow(data_per_day),1)
 
 
-for(i in 200:nrow(data_per_day_orig)) {
+# for(i in 200:(nrow(data_per_day_orig)-train_size)) {
+for(i in 200:300) {
   # Train Set for model
 
   rand_start <- i
-  # rand_end <- rand_start + train_size
-  rand_end <- nrow(data_per_day_orig)
+  rand_end <- rand_start + train_size
+  # rand_end <- nrow(data_per_day_orig)
   data_per_day <- data_per_day_orig[rand_start:rand_end,]
 
   # Test Set for model
@@ -89,11 +90,25 @@ for(i in 200:nrow(data_per_day_orig)) {
   input_end <- input_size + input_start
   data_input <- data_per_day_input[input_start:input_end,]
 
-
   result_ma_now <- result_matrix(data_per_day,data_input,n_col_features,nbin)
 
   result_ma <- rbind(result_ma,result_ma_now)
 }
+
+prove <- NULL
+# for(i in nrow(result_ma)) prove[i] <- ifelse(result_ma[i,5] == 1 && result_ma[i,4] == 0, 1,0)
+
+prove <- factor(result_ma$Eval1)
+
+# result_ma$col_sum <- result_ma$Eval0 + result_ma$Eval1
+# if(result_ma$col_sum == 2) {
+#   result_ma$col_sum <- 0
+#   prove <- factor(result_ma$col_sum)
+# } else {
+#   prove <- factor(result_ma$Eval1)
+# }
+
+confusionMatrix(prove,factor(result_ma$Benchmark),positive = "1")
 
 # rm(acc1); rm(acc0); rm(acc_c); rm(acc_sc)
 
