@@ -75,7 +75,7 @@ data_per_day_orig <- data_per_day[complete.cases(data_per_day),]
 
 data_per_day_input <- data_per_day
 result_ma <- NULL
-train_size <- 2000
+train_size <- nrow(data_per_day)
 # rand_start <- sample(train_size:nrow(data_per_day),1)
 
 
@@ -83,7 +83,7 @@ train_size <- 2000
 for(i in 200:300) {
   # Train Set for model
 
-  rand_start <- i
+  rand_start <- 1
   rand_end <- rand_start + train_size
   # rand_end <- nrow(data_per_day_orig)
   data_per_day <- data_per_day_orig[rand_start:rand_end,]
