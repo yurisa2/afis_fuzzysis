@@ -1,5 +1,5 @@
-# PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
-PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
+PATH <- "C:/Bitnami/wampstack-7.1.20-1/apache2/htdocs/FuzzySystem"
+# PATH <- "/Applications/mampstack-5.6.21-2/apache2/htdocs/afis_fuzzysis"
 setwd(PATH)
 
 source(file="include.R")
@@ -11,8 +11,11 @@ options(warn=-1)
 data <- read.csv("dias_horas_full.csv")
 data$radiacao_global_kjm2 <- NULL
 
-data$Dia <- as.Date(data$Dia)
+
 # data <- data[4000:5000,] # para nao fritar CPU
+
+ # Adiciona a direcao do vento decomposta
+data <- cbind(data,wind_dir(data[,"vento_dir_graus"]))
 
 # Data Por dia
 data_per_day_sum <- aggregate(data[,4:ncol(data)], by=list(data$Dia), FUN=sum,na.rm=TRUE)
@@ -41,7 +44,7 @@ data_per_day[,1] <- NULL
 data_per_day$sum_precipitacao_mm_1_bin <- ifelse(data_per_day$sum_precipitacao_mm_1_bin > 0 , 1, 0)
 data_per_day$sum_precipitacao_mm_1_bin <- factor(data_per_day$sum_precipitacao_mm_1_bin)
 
-
+# str(data_per_day)
 
 # for (i in 1:ncol(data_per_day)){ print(paste(i,colnames(data_per_day)[i])) }
 
@@ -60,8 +63,9 @@ data_per_day$sum_precipitacao_mm_1_bin <- factor(data_per_day$sum_precipitacao_m
 # data_per_month <- aggregate(data_per_month[,4:ncol(data_per_month)-1], by=list(data_per_month$mes), FUN=mean,na.rm=TRUE)
 
 # Data Setting
-n_col_features <- c(1,2,3,10,11,18,19,20,27,28,34,35,36,43,44) # Define colunas para estudo;
-nbin <- 51 # Define a Coluna Binária
+n_col_features <- c(1,2,3,10,11,17,18,19,20,22,23,24,31,32,34,38,39,40,41,
+42,43,44,51,52,54,58,59,60,61) # Define colunas para estudo;
+nbin <- 63 # Define a Coluna Binária
 
 # summary(data_per_day[complete.cases(data_per_day),n_col_features])
 
@@ -71,7 +75,7 @@ data_per_day_orig <- data_per_day[complete.cases(data_per_day),]
 
 data_per_day_input <- data_per_day
 result_ma <- NULL
-train_size <- 90
+train_size <- 2000
 # rand_start <- sample(train_size:nrow(data_per_day),1)
 
 
@@ -97,7 +101,7 @@ for(i in 200:300) {
 
 prove <- NULL
 # for(i in nrow(result_ma)) prove[i] <- ifelse(result_ma[i,5] == 1 && result_ma[i,4] == 0, 1,0)
-
+# str(data_per_day)
 prove <- factor(result_ma$Eval1)
 
 # result_ma$col_sum <- result_ma$Eval0 + result_ma$Eval1

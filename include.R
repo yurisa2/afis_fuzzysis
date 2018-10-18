@@ -170,68 +170,58 @@ accuracy_fis <- function(
       if(total$col_sum == 2) {
         total$col_sum <- 0
         prove <- factor(total$col_sum)
-      } else {
-        prove <- factor(total$Eval1)
+        } else {
+          prove <- factor(total$Eval1)
+        }
       }
-    }
-    if(method == "sc") # Super Conservative
-    {
-      total$cond_0 <- ifelse(total$Eval0 < 50,1,0)
-      total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
-      if(total$cond_0 == 1 && total$cond_1 == 1) {
-        total$result <- 1
-        prove <- factor(total$result)
-      } else {
-        total$result <- 0
-        prove <- factor(total$result)
-      }
-    }
+      if(method == "sc") # Super Conservative
+      {
+        total$cond_0 <- ifelse(total$Eval0 < 50,1,0)
+        total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
+        if(total$cond_0 == 1 && total$cond_1 == 1) {
+          total$result <- 1
+          prove <- factor(total$result)
+          } else {
+            total$result <- 0
+            prove <- factor(total$result)
+          }
+        }
 
-    conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive = "1")
-    return(conf_mat)
-  }
+        conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive = "1")
+        return(conf_mat)
+      }
 
 plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
-    for(i in 1:length(model_one$input)) {
-      col_name_var <- model_one$input[[i]]$name
-      col_num_var <- which( colnames(dataset)==col_name_var )
+  for(i in 1:length(model_one$input)) {
+    col_name_var <- model_one$input[[i]]$name
+    col_num_var <- which( colnames(dataset)==col_name_var )
 
-      par(mfrow=c(2,2))
+    par(mfrow=c(2,2))
 
-      feature_weight <- round(weight_list_n(dataset,nbin,features)[col_num_var],3)
+    feature_weight <- round(weight_list_n(dataset,nbin,features)[col_num_var],3)
 
-      plotmf(model_one, "input", i,main =paste(col_num_var,"ONE",model_one$input[[i]]$name))
-      plotmf(model_zero, "input", i,main =paste(col_num_var,"ZERO",model_zero$input[[i]]$name))
-      boxplot(dataset[,col_num_var]~dataset[,nbin],main =paste(col_num_var,"Weight",feature_weight))
-      hist(dataset[,col_num_var],main = paste(col_num_var,"Dist.",model_one$input[[i]]$name))
-    }
+    plotmf(model_one, "input", i,main =paste(col_num_var,"ONE",model_one$input[[i]]$name))
+    plotmf(model_zero, "input", i,main =paste(col_num_var,"ZERO",model_zero$input[[i]]$name))
+    boxplot(dataset[,col_num_var]~dataset[,nbin],main =paste(col_num_var,"Weight",feature_weight))
+    hist(dataset[,col_num_var],main = paste(col_num_var,"Dist.",model_one$input[[i]]$name))
   }
+}
 
+wind_dir <- function(wind_dir_input){
+  north <- ifelse(cos(wind_dir_input*pi/180) < 0,0, cos(wind_dir_input*pi/180))
+  east <- ifelse(sin(wind_dir_input*pi/180) < 0,0, sin(wind_dir_input*pi/180))
+  south <-ifelse(cos(wind_dir_input*pi/180)*-1 < 0,0, cos(wind_dir_input*pi/180)*-1)
+  west <- ifelse(sin(wind_dir_input*pi/180)*-1 < 0,0, sin(wind_dir_input*pi/180)*-1)
 
+  cardinal <- NULL
 
+  cardinal$wind_dir_north <- round(north,2)
+  cardinal$wind_dir_east <- round(east,2)
+  cardinal$wind_dir_south <- round(south,2)
+  cardinal$wind_dir_west <- round(west,2)
 
-  wind_fis <- newfis("wind_fis")
-  wind_fis <- addvar(wind_fis,"input", "wind_dir",c(0,360) )
-  wind_fis <- addmf(wind_fis,"input",1,"north_a","trimf",c(0,0,90))
-  wind_fis <- addmf(wind_fis,"input",1,"north_b","trimf",c(270,360,360))
-  wind_fis <- addmf(wind_fis,"input",1,"east","trimf",c(0,90,180))
+  # colnames(cardinal) <- NULL
 
-  wind_fis <- addvar(wind_fis,"output","North Level", c(0,100))
-  wind_fis <- addmf(wind_fis,"output",1,"Ramp","trimf", c(0, 100, 100 ))
-
-  wind_fis <- addvar(wind_fis,"output","East Level", c(0,100))
-  wind_fis <- addmf(wind_fis,"output",2,"Ramp east","trimf", c(0, 100, 100 ))
-
-  rule1 <- c(1,1,0,1,2)
-  rule2 <- c(2,1,0,1,2)
-  rule3 <- c(3,0,1,1,2)
-  rule <- rbind(rule1,rule2,rule3)
-rule <- matrix(rule,nrow = 3)
-wind_fis <- addrule(wind_fis,rule)
-
-plotmf(wind_fis,"input",1)
-
-showfis(wind_fis)
-
-showGUI(wind_fis)
- evalfis(90,wind_fis)
+  # colnames(cardinal) <- c("wind_north","wind_east","wind_south","wind_west")
+  return(cardinal)
+}
