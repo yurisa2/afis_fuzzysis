@@ -280,6 +280,7 @@ accuracy_fis <- function(
         conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive= "1")
         return(conf_mat)
       }
+
 # plots 4 different graphs for each variable (feature)
 plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
   for(i in 1:length(model_one$input)) {
@@ -335,41 +336,44 @@ evaluate_afis <- function(trailing_size,starting_point,dataset, eval_plots =F) {
     data_input <- dataset[i,]
 
     result_ma_now <- result_matrix(training_data,
-                                   data_input,
-                                   n_col_features,
-                                   nbin,
-                                   plots=F) # EDITAVEL
+      data_input,
+      n_col_features,
+      nbin,
+      plots=F) # EDITAVEL
 
-    result_ma <- rbind(result_ma,result_ma_now)
+      result_ma <- rbind(result_ma,result_ma_now)
 
-    # Necessario no minimo dois niveis de fator para a conf_matrix
-    if(nlevels(factor(result_ma$Eval1)) == nlevels(factor(result_ma$Benchmark))) {
-      conf_ma_now <- confusionMatrix(factor(result_ma$Eval1),
-                                     factor(result_ma$Benchmark),
-                                     positive = "1")
+      # Necessario no minimo dois niveis de fator para a conf_matrix
+      if(nlevels(factor(result_ma$Eval1)) > 1 && nlevels(factor(result_ma$Benchmark)) > 1) {
+        conf_ma_now <- confusionMatrix(factor(result_ma$Eval1),
+        factor(result_ma$Benchmark),
+        positive = "1")
 
-      conf_ma <- rbind(conf_ma,c(i,
-                                 conf_ma_now$byClass[3],
-                                 conf_ma_now$byClass[4],
-                                 conf_ma_now$byClass[11]))
+        conf_ma <- rbind(conf_ma,c(i,
+          conf_ma_now$byClass[3],
+          conf_ma_now$byClass[4],
+          conf_ma_now$byClass[11]))
+        }
+
+        if(i %% 100 == 0)   print(paste(Sys.time(),
+        "Current:",
+        i,
+        "ln. of",
+        nrow(dataset)))
+      }
+
+      print(paste("Evaluating:",Sys.time()))
+
+      cumulative <- conf_ma
+
+      if(eval_plots) {
+        plot(cumulative)
+        grid(NA, 5, lwd = 2) # grid only in y-direction
+      }
+
+      conf_matrix_return <- confusionMatrix(factor(result_ma$Eval1),
+      factor(result_ma$Benchmark),
+      positive = "1")
+
+      return(conf_matrix_return)
     }
-
-    if(i %% 100 == 0)   print(paste(Sys.time(),
-                                    "Current:",
-                                    i,
-                                    "ln. of",
-                                    nrow(dataset)))
-  }
-
-  print(paste("Evaluating:",Sys.time()))
-
-  cumulative <- conf_ma
-  plot(cumulative)
-  grid(NA, 5, lwd = 2) # grid only in y-direction
-
-  conf_matrix_return <- confusionMatrix(factor(result_ma$Eval1),
-                                        factor(result_ma$Benchmark),
-                                        positive = "1")
-
- return(conf_matrix_return)
-}
