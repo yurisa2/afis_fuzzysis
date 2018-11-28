@@ -17,7 +17,7 @@ str(direcao_1)
 print(col_names_func(direcao_1))
 
 
-n_col_features <- c(7,9,16) # Define colunas para estudo; # EDITAVEL
+n_col_features <- c(7:10) # Define colunas para estudo; # EDITAVEL
 nbin <- 6 # Define a Coluna Binaria (resultado) # EDITAVEL
 
 
@@ -25,4 +25,4 @@ starting_point <- nrow(direcao_1)-100 # Onde comecar a analise (ln dataset), obs
 ################################################################################
 
 print(paste("Inicio Laco cumulativo:",Sys.time()))
-nALLt0 <- evaluate_afis(0,starting_point,direcao_1,eval_plots=T) # 0 reseta o trailing size para = i
+nALLt0 <- evaluate_afis(20,starting_point,direcao_1,eval_plots=T) # 0 reseta o trailing size para = i

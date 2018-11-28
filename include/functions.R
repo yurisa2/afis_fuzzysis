@@ -103,6 +103,10 @@ create_fuzzy_rules <- function(dataset,features) {
     m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
     j <- j + 5 # Goto Next 5 Lines
   }
+    # if(!file.exists("rules_debug.csv")) write.csv(m, file = "rules_debug.csv") # DEBUG
+
+  if(!file.exists("total_col.csv")) write.csv(m, file = "total_col.csv") # DEBUG
+
   return(m)
 }
 #
