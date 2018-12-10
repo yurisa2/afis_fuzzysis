@@ -208,6 +208,19 @@ create_fuzzy_inputs <- function(fuzzy_model,
   return(fuzzy_model)
 }
 
+auto_feature_selector <- function(training_data,nbin){
+
+  features <- weight_list_n(training_data,nbin,1:ncol(training_data))
+
+  above_weights <- NULL
+
+  for(i in 1:ncol(training_data)) {
+   if(features[i] > 0.5) above_weights <- c(above_weights,i)
+  }
+
+ return()
+}
+
 
 ######## RETURNS 2col, [FIS0,FIS1] ########
 # Creates two models, one for 0 and one for 1 and evaluate them.

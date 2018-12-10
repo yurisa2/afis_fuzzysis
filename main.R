@@ -29,6 +29,13 @@ testing_data <- direcao_1[(nrow(direcao_1)-101):(nrow(direcao_1)),]
 str(training_data)
 str(testing_data)
 
+features <- weight_list_n(training_data,nbin,c(7:72))
+
+above_weights <- NULL
+
+for(i in c(7:72)) {
+ if(features[i] > 0.5) above_weights <- c(above_weights,i)
+}
 # starting_point <- nrow(direcao_1)-100 # Onde comecar a analise (ln dataset), observare que deve ser maior que trailing_size # EDITAVEL
 ################################################################################
 
@@ -37,7 +44,7 @@ print(paste("Inicio Laco cumulativo:",Sys.time()))
 # nALLt0 <- evaluate_afis(20,starting_point,direcao_1,eval_plots=F) # 0 reseta o trailing size para = i
 source(file="include/functions.R")
 
-res_mat <- evaluate_afis(20,(nrow(training_data)-200),training_data,n_col_features,eval_method = "only_1")
+res_mat <- evaluate_afis(20,(nrow(training_data)-200),training_data,above_weights,eval_method = "only_1")
 
 
 objects(res_mat)
