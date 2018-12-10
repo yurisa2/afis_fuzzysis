@@ -94,48 +94,48 @@ weight_list_n <- function(dataset, nbin, features){
 
 # Analyze and create the fuzzy rules, using weights from previous functions
 create_fuzzy_rules <- function(dataset,features) {
-  # total_col <- length(features) + 3
-  # m <- matrix(0L, nrow = 5*length(features), ncol = total_col)
-  # m[,total_col] <- 1 # Add 1 to last col as in AND
-  # m_test <- m
-  #
-  # j <- 1
-  # for(i in 1:length(features))
-  # {
-  #   # feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
-  #   feature_weight <- 1
-  #   m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
-  #   # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
-  #   m[j:(j+4),(total_col-1)] <- feature_weight
-  #   # m[j:(j+4),(total_col-1)] <- 1
-  #   m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
-  #   j <- j + 5 # Goto Next 5 Lines
-  # }
+  total_col <- length(features) + 3
+  m <- matrix(0L, nrow = 5*length(features), ncol = total_col)
+  m[,total_col] <- 1 # Add 1 to last col as in AND
+  m_test <- m
+
+  j <- 1
+  for(i in 1:length(features))
+  {
+    # feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
+    feature_weight <- 1
+    m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
+    # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
+    m[j:(j+4),(total_col-1)] <- feature_weight
+    # m[j:(j+4),(total_col-1)] <- 1
+    m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
+    j <- j + 5 # Goto Next 5 Lines
+  }
 
     # Fazer com que os pesos sejam calculados, normalizados e depois DISTRIBUIDOS (provavelmente media ponterada) para todo o rolê
     # embora até hoje nao tenha feito muita coisa
-
-    total_col_test <- new.expand.grid(c(1,2,3,4,5),as.integer(length(features)))
-    total_col_test_soma <- total_col_test
-    total_col_test_soma[total_col_test_soma == 4] = 2
-    total_col_test_soma[total_col_test_soma == 5] = 1
-
-    res_row <- NULL
-    for(j in 1:nrow(total_col_test_soma)) {
-      res_row[j] = sum(total_col_test_soma[j,])
-    }
-
-
-    res_row <- normalize(res_row)
-
-    res_row[res_row >= 0.66] = 3
-    res_row[res_row > 0.33 & res_row < 0.66 ] = 2
-    res_row[res_row <= 0.33 ] = 1
-
-    total_col_test <- cbind(total_col_test,res_row)
-    total_col_test <- cbind(total_col_test,1,1)
-
-    m <- as.matrix(total_col_test)
+    #
+    # total_col_test <- new.expand.grid(c(1,2,3,4,5),as.integer(length(features)))
+    # total_col_test_soma <- total_col_test
+    # total_col_test_soma[total_col_test_soma == 4] = 2
+    # total_col_test_soma[total_col_test_soma == 5] = 1
+    #
+    # res_row <- NULL
+    # for(j in 1:nrow(total_col_test_soma)) {
+    #   res_row[j] = sum(total_col_test_soma[j,])
+    # }
+    #
+    #
+    # res_row <- normalize(res_row)
+    #
+    # res_row[res_row >= 0.66] = 3
+    # res_row[res_row > 0.33 & res_row < 0.66 ] = 2
+    # res_row[res_row <= 0.33 ] = 1
+    #
+    # total_col_test <- cbind(total_col_test,res_row)
+    # total_col_test <- cbind(total_col_test,1,1)
+    #
+    # m <- as.matrix(total_col_test)
 
   return(m)
 }
@@ -253,18 +253,30 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
 }
 ############################################
 # Returns a matrix (DF) of results, using original data for benchmarking
-result_matrix <- function(dataset,data_test,features,nbin, plots = F) {
+result_matrix <- function(dataset,
+                          data_test,
+                          features,
+                          nbin,
+                          plots = F,
+                          method = "only_1") {
+
   if(missing(plots)) plots <- F
+  if(missing(method)) method <- "only_1"
+
   d_bench <- data_test
 
   evaluation <- fuz_sis(dataset,data_test,features,nbin, plots)
   # EVresult_fis <- ifelse(evaluation$one > 50,1,0)
 
+    Eval0=ifelse(evaluation$FIS1 > 50,0,1)
+    Eval1=ifelse(evaluation$FIS1 > 50,1,0)
+
+
   return_result_matrix <- cbind(evaluation,
     Benchmark=as.character(d_bench[,nbin]),
-    Eval0=ifelse(evaluation$FIS0 > 50,1,0),
-    Eval1=ifelse(evaluation$FIS1 > 50,1,0)
-  )
+    Eval0,
+    Eval1)
+
   # return_result_matrix <- data.frame(return_result_matrix)
   return(data.frame(return_result_matrix))
   # return(total)
@@ -273,47 +285,47 @@ result_matrix <- function(dataset,data_test,features,nbin, plots = F) {
 # measures the accuracy for the model, with 4 different approaches
 # Only_1 - just check the "1" predictions
 # Only_0 - Just the "0" predictions
-# conservative - compares if 1 is greater than 0 and if 1 is gt 50
+# conservative - compares if ONE is greater than ZERO and if ONE is gt 50
 # Super Conservative (sc) - all above plus 0 is lt 50
-accuracy_fis <- function(
-  dataset,
-  data_test,
-  features,
-  nbin,
-  plots = F,
-  method = "only_1") {
-    if(missing(plots)) plots <- F
-
-    total <- result_matrix(dataset,data_test,features,nbin,plots)
-
-    if(method == "only_1") prove <- factor(total$Eval1)
-    if(method == "only_0") prove <- factor(total$Eval0)
-    if(method == "conservative")
-    {
-      total$col_sum <- total$Eval0 + total$Eval1
-      if(total$col_sum == 2) {
-        total$col_sum <- 0
-        prove <- factor(total$col_sum)
-        } else {
-          prove <- factor(total$Eval1)
-        }
-      }
-      if(method == "sc") # Super Conservative
-      {
-        total$cond_0 <- ifelse(total$Eval0 < 50,1,0)
-        total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
-        if(total$cond_0 == 1 && total$cond_1 == 1) {
-          total$result <- 1
-          prove <- factor(total$result)
-          } else {
-            total$result <- 0
-            prove <- factor(total$result)
-          }
-        }
-
-        conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive= "1")
-        return(conf_mat)
-      }
+# accuracy_fis <- function(
+#   dataset,
+#   data_test,
+#   features,
+#   nbin,
+#   plots = F,
+#   method = "only_1") {
+#     if(missing(plots)) plots <- F
+#
+#     total <- result_matrix(dataset,data_test,features,nbin,plots)
+#
+#     if(method == "only_1") prove <- factor(total$Eval1)
+#     if(method == "only_0") prove <- factor(total$Eval0)
+#     if(method == "conservative")
+#     {
+#       total$col_sum <- total$Eval0 + total$Eval1
+#       if(total$col_sum == 2) {
+#         total$col_sum <- 0
+#         prove <- factor(total$col_sum)
+#         } else {
+#           prove <- factor(total$Eval1)
+#         }
+#       }
+#       if(method == "sc") # Super Conservative
+#       {
+#         total$cond_0 <- ifelse(total$Eval0 < 50,1,0)
+#         total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
+#         if(total$cond_0 == 1 && total$cond_1 == 1) {
+#           total$result <- 1
+#           prove <- factor(total$result)
+#           } else {
+#             total$result <- 0
+#             prove <- factor(total$result)
+#           }
+#         }
+#
+#         conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive= "1")
+#         return(conf_mat)
+#       }
 
 # plots 4 different graphs for each variable (feature)
 plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
@@ -352,11 +364,17 @@ col_names_func <- function(dataset) {
   return(rect)
 }
 
-evaluate_afis <- function(trailing_size,starting_point,dataset, eval_plots =F) {
+evaluate_afis <- function(trailing_size,
+                          starting_point,
+                          dataset,
+                          eval_plots =F,
+                          eval_method = "only_1") {
+
   if(missing(eval_plots)) eval_plots <- F
+  if(missing(eval_method)) eval_method <- "only_1"
 
   result_ma <- NULL # Inicializando
-  conf_ma <- NULL # Inicializando
+  conf_ma <- NULL # Inicializandoa
 
   print(paste("Start Evaluating:",Sys.time()))
 
@@ -373,7 +391,9 @@ evaluate_afis <- function(trailing_size,starting_point,dataset, eval_plots =F) {
       data_input,
       n_col_features,
       nbin,
-      plots=F) # EDITAVEL
+      plots=F,
+      method = eval_method
+      ) # EDITAVEL
 
       result_ma <- rbind(result_ma,result_ma_now)
 
