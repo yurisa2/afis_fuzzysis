@@ -208,9 +208,9 @@ create_fuzzy_inputs <- function(fuzzy_model,
   return(fuzzy_model)
 }
 
-auto_feature_selector <- function(training_data,nbin){
+auto_feature_selector <- function(training_data,nbin,cols_features){
 
-  features <- weight_list_n(training_data,nbin,1:ncol(training_data))
+  features <- weight_list_n(training_data,nbin,cols_features)
 
   above_weights <- NULL
 
@@ -218,7 +218,7 @@ auto_feature_selector <- function(training_data,nbin){
    if(features[i] > 0.5) above_weights <- c(above_weights,i)
   }
 
- return()
+ return(above_weights)
 }
 
 
