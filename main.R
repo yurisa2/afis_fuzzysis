@@ -18,7 +18,7 @@ str(direcao_1)
 print(col_names_func(direcao_1))
 
 
-n_col_features <- c(7:72) # Define colunas para estudo; # EDITAVEL
+possb_feat <- c(7:72) # Define colunas para estudo; # EDITAVEL
 nbin <- 6 # Define a Coluna Binaria (resultado) # EDITAVEL
 
 
@@ -31,11 +31,6 @@ str(testing_data)
 
 features <- weight_list_n(training_data,nbin,c(7:72))
 
-above_weights <- NULL
-
-for(i in c(7:72)) {
- if(features[i] > 0.5) above_weights <- c(above_weights,i)
-}
 # starting_point <- nrow(direcao_1)-100 # Onde comecar a analise (ln dataset), observare que deve ser maior que trailing_size # EDITAVEL
 ################################################################################
 
@@ -44,8 +39,9 @@ print(paste("Inicio Laco cumulativo:",Sys.time()))
 # nALLt0 <- evaluate_afis(20,starting_point,direcao_1,eval_plots=F) # 0 reseta o trailing size para = i
 source(file="include/functions.R")
 
-res_mat <- evaluate_afis(20,(nrow(training_data)-200),training_data,above_weights,eval_method = "only_1")
 
-
-objects(res_mat)
-res_mat$table
+res_mat20 <- evaluate_afis(20,(nrow(training_data)-2000),training_data,possb_feat)
+res_mat40 <- evaluate_afis(40,(nrow(training_data)-2000),training_data,possb_feat)
+res_mat60 <- evaluate_afis(60,(nrow(training_data)-2000),training_data,possb_feat)
+res_mat80 <- evaluate_afis(80,(nrow(training_data)-2000),training_data,possb_feat)
+res_mat100 <- evaluate_afis(100,(nrow(training_data)-2000),training_data,possb_feat)

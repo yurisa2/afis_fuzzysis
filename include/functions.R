@@ -214,8 +214,11 @@ auto_feature_selector <- function(training_data,nbin,cols_features){
 
   above_weights <- NULL
 
-  for(i in 1:ncol(training_data)) {
-   if(features[i] > 0.5) above_weights <- c(above_weights,i)
+
+  for(i in 1:length(features)) {
+    # print(paste(i,features[i])) # DEBUG
+
+   if(!is.na(features[i]) && features[i] > 0.5) above_weights <- c(above_weights,i)
   }
 
  return(above_weights)
@@ -380,6 +383,7 @@ col_names_func <- function(dataset) {
 evaluate_afis <- function(trailing_size,
                           starting_point,
                           dataset,
+                          possible_features,
                           eval_plots =F,
                           eval_method = "only_1") {
 
@@ -397,6 +401,9 @@ evaluate_afis <- function(trailing_size,
     if(trailing_size == 0) trailing_size <- i # # Atropela trailing_size para resetar em cada iteracao # EDITAVEL
 
     training_data <- dataset[(i-trailing_size+1):(i-1),]
+
+    n_col_features <- auto_feature_selector(training_data,nbin,possible_features)
+
 
     data_input <- dataset[i,]
 
