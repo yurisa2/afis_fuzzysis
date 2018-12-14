@@ -93,51 +93,53 @@ weight_list_n <- function(dataset, nbin, features){
 }
 
 # Analyze and create the fuzzy rules, using weights from previous functions
-create_fuzzy_rules <- function(dataset,features) {
-  total_col <- length(features) + 3
-  m <- matrix(0L, nrow = 5*length(features), ncol = total_col)
-  m[,total_col] <- 1 # Add 1 to last col as in AND
-  m_test <- m
+create_fuzzy_rules <- function(dataset,features. rule_set = "partial") {
+  if(rule_set=="partial") {
+      total_col <- length(features) + 3
+      m <- matrix(0L, nrow = 5*length(features), ncol = total_col)
+      m[,total_col] <- 1 # Add 1 to last col as in AND
+      m_test <- m
 
-  j <- 1
-  for(i in 1:length(features))
-  {
-    # feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
-    feature_weight <- 1
-    m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
-    # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
-    m[j:(j+4),(total_col-1)] <- feature_weight
-    # m[j:(j+4),(total_col-1)] <- 1
-    m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
-    j <- j + 5 # Goto Next 5 Lines
-  }
+      j <- 1
+      for(i in 1:length(features))
+      {
+        # feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
+        feature_weight <- 1
+        m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
+        # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
+        m[j:(j+4),(total_col-1)] <- feature_weight
+        # m[j:(j+4),(total_col-1)] <- 1
+        m[j:(j+4),(total_col-2)] <- c(1,2,3,2,1) #Output MFs
+        j <- j + 5 # Goto Next 5 Lines
+      }
+    } else {
+      # Fazer com que os pesos sejam calculados, normalizados e depois DISTRIBUIDOS (provavelmente media ponterada) para todo o rolê
+      # embora até hoje nao tenha feito muita coisa
 
-    # Fazer com que os pesos sejam calculados, normalizados e depois DISTRIBUIDOS (provavelmente media ponterada) para todo o rolê
-    # embora até hoje nao tenha feito muita coisa
-    #
-    # total_col_test <- new.expand.grid(c(1,2,3,4,5),as.integer(length(features)))
-    # total_col_test_soma <- total_col_test
-    # total_col_test_soma[total_col_test_soma == 4] = 2
-    # total_col_test_soma[total_col_test_soma == 5] = 1
-    #
-    # res_row <- NULL
-    # for(j in 1:nrow(total_col_test_soma)) {
-    #   res_row[j] = sum(total_col_test_soma[j,])
-    # }
-    #
-    #
-    # res_row <- normalize(res_row)
-    #
-    # res_row[res_row >= 0.66] = 3
-    # res_row[res_row > 0.33 & res_row < 0.66 ] = 2
-    # res_row[res_row <= 0.33 ] = 1
-    #
-    # total_col_test <- cbind(total_col_test,res_row)
-    # total_col_test <- cbind(total_col_test,1,1)
-    #
-    # m <- as.matrix(total_col_test)
+      total_col_test <- new.expand.grid(c(1,2,3,4,5),as.integer(length(features)))
+      total_col_test_soma <- total_col_test
+      total_col_test_soma[total_col_test_soma == 4] = 2
+      total_col_test_soma[total_col_test_soma == 5] = 1
 
-  return(m)
+      res_row <- NULL
+      for(j in 1:nrow(total_col_test_soma)) {
+        res_row[j] = sum(total_col_test_soma[j,])
+      }
+
+
+      res_row <- normalize(res_row)
+
+      res_row[res_row >= 0.66] = 3
+      res_row[res_row > 0.33 & res_row < 0.66 ] = 2
+      res_row[res_row <= 0.33 ] = 1
+
+      total_col_test <- cbind(total_col_test,res_row)
+      total_col_test <- cbind(total_col_test,1,1)
+
+      m <- as.matrix(total_col_test)
+
+    }
+return(m)
 }
 #
 # ma_test <-matrix(0L, nrow = 5, ncol = 9)  # @nrussell
