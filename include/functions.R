@@ -93,7 +93,8 @@ weight_list_n <- function(dataset, nbin, features){
 }
 
 # Analyze and create the fuzzy rules, using weights from previous functions
-create_fuzzy_rules <- function(dataset,features. rule_set = "partial") {
+
+create_fuzzy_rules <- function(dataset,features, rule_set = "partial") {
   if(rule_set=="partial") {
       total_col <- length(features) + 3
       m <- matrix(0L, nrow = 5*length(features), ncol = total_col)
