@@ -94,7 +94,7 @@ weight_list_n <- function(dataset, nbin, features){
 
 # Analyze and create the fuzzy rules, using weights from previous functions
 
-create_fuzzy_rules <- function(dataset,features, rule_set = "partial") {
+create_fuzzy_rules <- function(dataset,features, rule_set = "partial", weights_type = "fixed") {
   if(rule_set=="partial") {
       total_col <- length(features) + 3
       m <- matrix(0L, nrow = 5*length(features), ncol = total_col)
@@ -104,8 +104,10 @@ create_fuzzy_rules <- function(dataset,features, rule_set = "partial") {
       j <- 1
       for(i in 1:length(features))
       {
-        # feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
-        feature_weight <- 1
+        if(weights_type == "fixed") { feature_weight <- 1 # Fixed and equal weights
+        } else {
+          feature_weight <- weight_list_n(dataset,nbin,features)[features[i]]
+        }
         m[j:(j+4),i] <- c(1,2,3,4,5) #input MFs
         # m[j:(j+4),(total_col-1)] <- ifelse(feature_weight == 0,0.000000001,feature_weight) #Calculate Weights IF For not 0;
         m[j:(j+4),(total_col-1)] <- feature_weight
@@ -140,6 +142,10 @@ create_fuzzy_rules <- function(dataset,features, rule_set = "partial") {
       m <- as.matrix(total_col_test)
 
     }
+
+    write(feature_weight,"feature_weight.txt",append = T) # DEBUG
+
+
 return(m)
 }
 #
@@ -223,6 +229,8 @@ auto_feature_selector <- function(training_data,nbin,cols_features){
 
    if(!is.na(features[i]) && features[i] > 0.5) above_weights <- c(above_weights,i)
   }
+
+  # write(above_weights,"above_weights.txt",append = T) # DEBUG
 
  return(above_weights)
 }
