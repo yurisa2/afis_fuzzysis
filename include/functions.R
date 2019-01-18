@@ -227,12 +227,13 @@ auto_feature_selector <- function(training_data,nbin,cols_features){
   for(i in 1:length(features)) {
     # print(paste(i,features[i])) # DEBUG
 
-   if(!is.na(features[i]) && features[i] > 0.8) above_weights <- c(above_weights,i)
+   if(!is.na(features[i]) && features[i] > 0.9) above_weights <- c(above_weights,i)
   }
 
-  # write("NL","above_weights.txt",append = T) # DEBUG
   # write(features,"features.txt",append = T) # DEBUG
   # write(length(above_weights),"lenght_weights.txt",append = T) # DEBUG
+
+  # write("NL","above_weights.txt",append = T) # DEBUG
   # write(above_weights,"above_weights.txt",append = T) # DEBUG
 
  return(above_weights)
