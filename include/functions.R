@@ -218,23 +218,37 @@ create_fuzzy_inputs <- function(fuzzy_model,
 }
 
 auto_feature_selector <- function(training_data,nbin,cols_features){
-
   features <- weight_list_n(training_data,nbin,cols_features)
-
   above_weights <- NULL
-
+  while_1 <- 1
+  orderer <- NULL
 
   for(i in 1:length(features)) {
     # print(paste(i,features[i])) # DEBUG
 
+    if(!is.na(features[i])) orderer <- rbind(orderer,c(i,features[i]))
+
    if(!is.na(features[i]) && features[i] > 0.9) above_weights <- c(above_weights,i)
   }
 
+if (length(above_weights) < 3){
+orderer <- orderer[order(orderer[,2]),1]
+orderer <- tail(orderer,n=3)
+above_weights <- orderer
+}
+
+
   # write(features,"features.txt",append = T) # DEBUG
   # write(length(above_weights),"lenght_weights.txt",append = T) # DEBUG
-
-  # write("NL","above_weights.txt",append = T) # DEBUG
-  # write(above_weights,"above_weights.txt",append = T) # DEBUG
+  #
+  # write("NL","DEBUG_orderer.txt",append = T) # DEBUG
+  # write(orderer,"DEBUG_orderer.txt",append = T) # DEBUG
+  #
+  # write("NL","DEBUG_above_weights.txt",append = T) # DEBUG
+  # write(above_weights,"DEBUG_above_weights.txt",append = T) # DEBUG
+  #
+  # write("NL","DEBUG_features.txt",append = T) # DEBUG
+  # write(features,"DEBUG_features.txt",append = T) # DEBUG
 
  return(above_weights)
 }
@@ -294,14 +308,33 @@ result_matrix <- function(dataset,
   if(missing(plots)) plots <- F
   if(missing(method)) method <- "only_1"
 
+  Eval0 <- 0
+  Eval1 <- 0
+
   d_bench <- data_test
 
   evaluation <- fuz_sis(dataset,data_test,features,nbin, plots)
   # EVresult_fis <- ifelse(evaluation$one > 50,1,0)
 
+  if(method == "only_1") {
     Eval0=ifelse(evaluation$FIS1 > 50,0,1)
     Eval1=ifelse(evaluation$FIS1 > 50,1,0)
+  }
 
+  if(method == "conservative" || method == "conservative1") {
+    if(evaluation$FIS0 < evaluation$FIS1 && evaluation$FIS1 > 50) {
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
+  if(method == "conservative2") {
+    if(evaluation$FIS0 < 50 &&
+       evaluation$FIS1 > 50) {
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
 
   return_result_matrix <- cbind(evaluation,
     Benchmark=as.character(d_bench[,nbin]),
@@ -400,10 +433,12 @@ evaluate_afis <- function(trailing_size,
                           dataset,
                           possible_features,
                           eval_plots =F,
-                          eval_method = "only_1") {
+                          eval_method = "only_1",
+                          eval_return = "matrix") {
 
   if(missing(eval_plots)) eval_plots <- F
   if(missing(eval_method)) eval_method <- "only_1"
+  if(missing(eval_return)) eval_return <- "matrix"
 
   result_ma <- NULL # Inicializando
   conf_ma <- NULL # Inicializandoa
@@ -460,9 +495,21 @@ evaluate_afis <- function(trailing_size,
         grid(NA, 5, lwd = 2) # grid only in y-direction
       }
 
-      conf_matrix_return <- confusionMatrix(factor(result_ma$Eval1),
-      factor(result_ma$Benchmark),
-      positive = "1")
+
+
+      if(eval_return == "matrix") {
+        conf_matrix_return <- confusionMatrix(factor(result_ma$Eval1),
+            factor(result_ma$Benchmark),
+            positive = "1")
+
+        }
+
+      if(eval_return == "table") {
+        conf_matrix_return <- result_ma
+        }
+
+
+
 
       return(conf_matrix_return)
 }

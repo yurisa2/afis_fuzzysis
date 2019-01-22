@@ -29,7 +29,7 @@ function(req){
   for(i in 1:ncol(cool_data)) cool_data[,i] <<- as.numeric(as.character(cool_data[,i]))
   
   cool_data$lucro <<- as.numeric(cool_data$lucro) * as.numeric(cool_data$Hilo_Direcao)
-  cool_data[,2] <<- ifelse (cool_data[,2] >= 0,1,0)
+  cool_data[,2] <<- ifelse (cool_data[,2] > 0,1,0)
   #  cool_data$lucro <<- factor(cool_data$lucro)
   
   possb_feat <- c(4:61)

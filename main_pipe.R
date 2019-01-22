@@ -5,8 +5,9 @@ options(warn=-1) # Comment for debug, uncomment for production (supress warnings
 
 source(file="include/functions.R")
 
-# data <- read.csv("data/Xeon.EURUSD.M30.P60.Venda.csv")
-data <- read.csv("data/Xeon.compraWIN.M5.P60.csv")
+# data <- read.csv("data/Xeon.EURUSD.p60.M30.csv")
+data <- read.csv("data.csv")
+
 
 # Get Col Numbers by name
 # print(col_names_func(data))
@@ -24,5 +25,8 @@ print(paste("Start!:",Sys.time()))
 # res_mat40 <- evaluate_afis(40,(nrow(data)-500),data,possb_feat)
 # res_mat60 <- evaluate_afis(60,(nrow(data)-500),data,possb_feat)
 # res_mat80 <- evaluate_afis(80,(nrow(data)-100),data,possb_feat)
-res_mat100 <- evaluate_afis(100,(nrow(data)-500),data,possb_feat)
+
+res_mat100 <- evaluate_afis(100,(nrow(data)-650),data,possb_feat,eval_method = "conservative2")
+
+summary(res_mat100)
 # res_mat500 <- evaluate_afis(500,(nrow(data)-500),data,possb_feat)
