@@ -228,7 +228,7 @@ auto_feature_selector <- function(training_data,nbin,cols_features){
 
     if(!is.na(features[i])) orderer <- rbind(orderer,c(i,features[i]))
 
-   if(!is.na(features[i]) && features[i] > 0.9) above_weights <- c(above_weights,i)
+   if(!is.na(features[i]) && features[i] > 0.5) above_weights <- c(above_weights,i)
   }
 
 if (length(above_weights) < 3){
@@ -244,8 +244,8 @@ above_weights <- orderer
   # write("NL","DEBUG_orderer.txt",append = T) # DEBUG
   # write(orderer,"DEBUG_orderer.txt",append = T) # DEBUG
   #
-  # write("NL","DEBUG_above_weights.txt",append = T) # DEBUG
-  # write(above_weights,"DEBUG_above_weights.txt",append = T) # DEBUG
+  write("NL","DEBUG_above_weights.txt",append = T) # DEBUG
+  write(above_weights,"DEBUG_above_weights.txt",append = T) # DEBUG
   #
   # write("NL","DEBUG_features.txt",append = T) # DEBUG
   # write(features,"DEBUG_features.txt",append = T) # DEBUG

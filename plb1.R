@@ -10,3 +10,4 @@ r <<- plumb("write.R")  # Where 'plumber.R' is the location of the file shown ab
 r$run(port=8000)
 
 
+write.csv(cool_data,file="data.csv")
