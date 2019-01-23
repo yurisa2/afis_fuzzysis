@@ -336,6 +336,22 @@ result_matrix <- function(dataset,
     }
   }
 
+  if(method == "sc") {
+    if(evaluation$FIS0 < 50 &&
+       evaluation$FIS1 > 55) {
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
+  if(method == "sc2") {
+    if(evaluation$FIS0 < 45 &&
+       evaluation$FIS1 > 50) {
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
   return_result_matrix <- cbind(evaluation,
     Benchmark=as.character(d_bench[,nbin]),
     Eval0,
