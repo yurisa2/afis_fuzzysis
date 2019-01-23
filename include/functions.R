@@ -352,6 +352,46 @@ result_matrix <- function(dataset,
     }
   }
 
+  if(method == "fuzzy50") {
+    fuzzy_res <- fuzzy_result(evaluation)
+    if(fuzzy_res$ret > 50){
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
+  if(method == "fuzzy55") {
+    fuzzy_res <- fuzzy_result(evaluation)
+    if(fuzzy_res$ret > 55){
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
+  if(method == "fuzzy60") {
+    fuzzy_res <- fuzzy_result(evaluation)
+    if(fuzzy_res$ret > 60){
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
+  if(method == "fuzzy65") {
+    fuzzy_res <- fuzzy_result(evaluation)
+    if(fuzzy_res$ret > 65){
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
+  if(method == "fuzzy70") {
+    fuzzy_res <- fuzzy_result(evaluation)
+    if(fuzzy_res$ret > 70){
+      Eval0 <- 0
+      Eval1 <- 1
+    }
+  }
+
   return_result_matrix <- cbind(evaluation,
     Benchmark=as.character(d_bench[,nbin]),
     Eval0,
@@ -361,51 +401,6 @@ result_matrix <- function(dataset,
   return(data.frame(return_result_matrix))
   # return(total)
 }
-
-# measures the accuracy for the model, with 4 different approaches
-# Only_1 - just check the "1" predictions
-# Only_0 - Just the "0" predictions
-# conservative - compares if ONE is greater than ZERO and if ONE is gt 50
-# Super Conservative (sc) - all above plus 0 is lt 50
-# accuracy_fis <- function(
-#   dataset,
-#   data_test,
-#   features,
-#   nbin,
-#   plots = F,
-#   method = "only_1") {
-#     if(missing(plots)) plots <- F
-#
-#     total <- result_matrix(dataset,data_test,features,nbin,plots)
-#
-#     if(method == "only_1") prove <- factor(total$Eval1)
-#     if(method == "only_0") prove <- factor(total$Eval0)
-#     if(method == "conservative")
-#     {
-#       total$col_sum <- total$Eval0 + total$Eval1
-#       if(total$col_sum == 2) {
-#         total$col_sum <- 0
-#         prove <- factor(total$col_sum)
-#         } else {
-#           prove <- factor(total$Eval1)
-#         }
-#       }
-#       if(method == "sc") # Super Conservative
-#       {
-#         total$cond_0 <- ifelse(total$Eval0 < 50,1,0)
-#         total$cond_1 <- ifelse(total$Eval1 > 50,1,0)
-#         if(total$cond_0 == 1 && total$cond_1 == 1) {
-#           total$result <- 1
-#           prove <- factor(total$result)
-#           } else {
-#             total$result <- 0
-#             prove <- factor(total$result)
-#           }
-#         }
-#
-#         conf_mat <- confusionMatrix(prove,factor(total$Benchmark),positive= "1")
-#         return(conf_mat)
-#       }
 
 # plots 4 different graphs for each variable (feature)
 plots_afis <- function(dataset,features,nbin,model_zero,model_one) {
@@ -511,21 +506,72 @@ evaluate_afis <- function(trailing_size,
         grid(NA, 5, lwd = 2) # grid only in y-direction
       }
 
-
+conf_matrix_return <- result_ma
 
       if(eval_return == "matrix") {
         conf_matrix_return <- confusionMatrix(factor(result_ma$Eval1),
             factor(result_ma$Benchmark),
             positive = "1")
-
         }
-
-      if(eval_return == "table") {
-        conf_matrix_return <- result_ma
-        }
-
 
 
 
       return(conf_matrix_return)
+}
+
+fuzzy_result <- function(result_mat_f) {
+
+result_mat_full <- result_mat_f
+result_mat_f <- as.matrix(result_mat_f[,1:2])
+
+model_result <- newfis("model_result")
+model_result <- addvar(model_result,"input","FIS0",c(15.33,84.67))
+model_result <- addmf(model_result,"input",1,"baixo","trimf",c(15.33,16.33,50))
+model_result <- addmf(model_result,"input",1,"medio","trimf",c(16.33,50,84.67))
+model_result <- addmf(model_result,"input",1,"alto","trimf",c(50,84.67,84.67))
+
+model_result <- addvar(model_result,"input","FIS1",c(15.33,84.67))
+model_result <- addmf(model_result,"input",2,"baixo","trimf",c(15.33,16.33,50))
+model_result <- addmf(model_result,"input",2,"medio","trimf",c(16.33,50,84.67))
+model_result <- addmf(model_result,"input",2,"alto","trimf",c(50,84.67,84.67))
+
+model_result <- addvar(model_result,"output","Eval1",c(0,100))
+model_result <- addmf(model_result,"output",1,"minimo","trimf",c(0,0,25))
+model_result <- addmf(model_result,"output",1,"baixo","trimf",c(0,25,50))
+model_result <- addmf(model_result,"output",1,"medio","trimf",c(25,50,75))
+model_result <- addmf(model_result,"output",1,"alto","trimf",c(50,75,100))
+model_result <- addmf(model_result,"output",1,"maximo","trimf",c(75,100,100))
+
+
+      total_col_test <- new.expand.grid(c(1,2,3),2)
+      total_col_test[,1] <- (total_col_test[,1] * -1)
+
+      total_col_test_soma <- total_col_test
+
+
+      res_row <- NULL
+      for(j in 1:nrow(total_col_test_soma)) {
+        res_row[j] = sum(total_col_test_soma[j,])
+      }
+
+      res_row <- normalize(res_row)
+
+      res_row[res_row >= 0.80] = 5
+      res_row[res_row > 0.60 & res_row < 0.80 ] = 4
+      res_row[res_row > 0.4 & res_row < 0.6 ] = 3
+      res_row[res_row > 0.2 & res_row < 0.4 ] = 2
+      res_row[res_row <= 0.20 ] = 1
+
+      total_col_test <- cbind(total_col_test,res_row)
+      total_col_test <- cbind(total_col_test,1,1)
+      total_col_test <- abs(total_col_test)
+      total_col_test <- as.matrix(total_col_test)
+
+model_result <- addrule(model_result,total_col_test)
+
+ret <- evalfis(result_mat_f[,1:2],model_result)
+
+ret <- cbind(result_mat_full,ret)
+
+return(ret)
 }

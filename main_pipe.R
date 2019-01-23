@@ -17,7 +17,13 @@ nbin <- 3 # Target binary column (factor 0;1)
 weights_type <- "dynamic"
 ################################################################################
 
-print(paste("Start!:",Sys.time()))
+  print(paste("Start!:",Sys.time()))
 
-res_mat100 <- evaluate_afis(100,(nrow(data)-200),data,possb_feat,eval_method = "sc")
-summary(res_mat100)
+# only_1 <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "only_1", eval_return = "matrix")
+# conservative <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "conservative", eval_return = "matrix")
+# conservative2 <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "conservative2", eval_return = "matrix")
+# sc <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "sc", eval_return = "matrix")
+# sc2 <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "sc2", eval_return = "matrix")
+fuzzy50 <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "fuzzy55", eval_return = "matrix")
+# fuzzy60 <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "fuzzy60", eval_return = "matrix")
+# fuzzy70 <- evaluate_afis(100,(nrow(data)-100),data,possb_feat,eval_method = "fuzzy70", eval_return = "matrix")
