@@ -257,7 +257,7 @@ above_weights <- orderer
 ######## RETURNS 2col, [FIS0,FIS1] ########
 # Creates two models, one for 0 and one for 1 and evaluate them.
 # the RETURN is a DF with Eval0 and Eval1 (ranks for the probability of 0 or 1)
-fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
+fuz_sis <- function(dataset,data_test,features,nbin, plots = F, weights = "fixed"){
   if(missing(plots)) plots <- F
 
   data_test <- data.matrix(data_test)
@@ -271,7 +271,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
                                     nbin,
                                     plots)
   model_zero <- create_fuzzy_outputs(model_zero)
-  rules <- create_fuzzy_rules(dataset,features)
+  rules <- create_fuzzy_rules(dataset,features,weights_type = weights)
   model_zero <- addrule(model_zero,rules)
 
   # print(rules) # DEBUG
@@ -279,7 +279,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F){
   model_one <- newfis("model_one")
   model_one <- create_fuzzy_inputs(model_one,dataset,"one",features,nbin, plots)
   model_one <- create_fuzzy_outputs(model_one, plots = F)
-  rules <- create_fuzzy_rules(dataset,features)
+  rules <- create_fuzzy_rules(dataset,features, weights_type = weights)
   model_one <- addrule(model_one,rules)
 
   # print(rules) # DEBUG
@@ -303,7 +303,8 @@ result_matrix <- function(dataset,
                           features,
                           nbin,
                           plots = F,
-                          method = "only_1") {
+                          method = "only_1",
+                          weights = "fixed") {
 
   if(missing(plots)) plots <- F
   if(missing(method)) method <- "only_1"
@@ -313,7 +314,7 @@ result_matrix <- function(dataset,
 
   d_bench <- data_test
 
-  evaluation <- fuz_sis(dataset,data_test,features,nbin, plots)
+  evaluation <- fuz_sis(dataset,data_test,features,nbin, plots, weights = weights)
   # EVresult_fis <- ifelse(evaluation$one > 50,1,0)
 
   if(method == "only_1") {
