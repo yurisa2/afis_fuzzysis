@@ -257,8 +257,9 @@ above_weights <- orderer
 ######## RETURNS 2col, [FIS0,FIS1] ########
 # Creates two models, one for 0 and one for 1 and evaluate them.
 # the RETURN is a DF with Eval0 and Eval1 (ranks for the probability of 0 or 1)
-fuz_sis <- function(dataset,data_test,features,nbin, plots = F, weights = "fixed"){
+fuz_sis <- function(dataset,data_test,features,nbin, plots = F, weights = "fixed", rule_set = "partial"){
   if(missing(plots)) plots <- F
+  if(missing(rule_set)) rule_set <- "partial"
 
   data_test <- data.matrix(data_test)
   data_test <- data_test[,features]
@@ -271,7 +272,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F, weights = "fixed
                                     nbin,
                                     plots)
   model_zero <- create_fuzzy_outputs(model_zero)
-  rules <- create_fuzzy_rules(dataset,features,weights_type = weights)
+  rules <- create_fuzzy_rules(dataset,features,weights_type = weights, rule_set = rule_set)
   model_zero <- addrule(model_zero,rules)
 
   # print(rules) # DEBUG
@@ -279,7 +280,7 @@ fuz_sis <- function(dataset,data_test,features,nbin, plots = F, weights = "fixed
   model_one <- newfis("model_one")
   model_one <- create_fuzzy_inputs(model_one,dataset,"one",features,nbin, plots)
   model_one <- create_fuzzy_outputs(model_one, plots = F)
-  rules <- create_fuzzy_rules(dataset,features, weights_type = weights)
+  rules <- create_fuzzy_rules(dataset,features, weights_type = weights, rule_set = rule_set)
   model_one <- addrule(model_one,rules)
 
   # print(rules) # DEBUG
@@ -304,7 +305,9 @@ result_matrix <- function(dataset,
                           nbin,
                           plots = F,
                           method = "only_1",
-                          weights = "fixed") {
+                          weights = "fixed",
+                          rule_set = "partial")
+                          {
 
   if(missing(plots)) plots <- F
   if(missing(method)) method <- "only_1"
@@ -314,7 +317,7 @@ result_matrix <- function(dataset,
 
   d_bench <- data_test
 
-  evaluation <- fuz_sis(dataset,data_test,features,nbin, plots, weights = weights)
+  evaluation <- fuz_sis(dataset,data_test,features,nbin, plots, weights = weights, rule_set = rule_set)
   # EVresult_fis <- ifelse(evaluation$one > 50,1,0)
 
   if(method == "only_1") {
