@@ -323,74 +323,54 @@ result_matrix <- function(dataset,
   }
 
   if(method == "conservative" || method == "conservative1") {
-    if(evaluation$FIS0 < evaluation$FIS1 && evaluation$FIS1 > 50) {
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(evaluation$FIS0 < evaluation$FIS1 & evaluation$FIS1 > 50,0,1)
+    Eval1=ifelse(evaluation$FIS0 < evaluation$FIS1 & evaluation$FIS1 > 50,1,0)
+
   }
 
   if(method == "conservative2") {
-    if(evaluation$FIS0 < 50 &&
-       evaluation$FIS1 > 50) {
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(evaluation$FIS0 < 50 & evaluation$FIS1 > 50,0,1)
+    Eval1=ifelse(evaluation$FIS0 < 50 & evaluation$FIS1 > 50,1,0)
   }
 
   if(method == "sc") {
-    if(evaluation$FIS0 < 50 &&
-       evaluation$FIS1 > 55) {
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(evaluation$FIS0 < 50 & evaluation$FIS1 > 55,0,1)
+    Eval1=ifelse(evaluation$FIS0 < 50 & evaluation$FIS1 > 55,1,0)
   }
 
   if(method == "sc2") {
-    if(evaluation$FIS0 < 45 &&
-       evaluation$FIS1 > 50) {
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(evaluation$FIS0 < 45 & evaluation$FIS1 > 50,0,1)
+    Eval1=ifelse(evaluation$FIS0 < 45 & evaluation$FIS1 > 50,1,0)
   }
 
   if(method == "fuzzy50") {
     fuzzy_res <- fuzzy_result(evaluation)
-    if(fuzzy_res$ret > 50){
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(fuzzy_res$ret > 50,0,1)
+    Eval1=ifelse(fuzzy_res$ret > 50,1,0)
   }
 
   if(method == "fuzzy55") {
     fuzzy_res <- fuzzy_result(evaluation)
-    if(fuzzy_res$ret > 55){
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(fuzzy_res$ret > 55,0,1)
+    Eval1=ifelse(fuzzy_res$ret > 55,1,0)
   }
 
   if(method == "fuzzy60") {
     fuzzy_res <- fuzzy_result(evaluation)
-    if(fuzzy_res$ret > 60){
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(fuzzy_res$ret > 60,0,1)
+    Eval1=ifelse(fuzzy_res$ret > 60,1,0)
   }
 
   if(method == "fuzzy65") {
     fuzzy_res <- fuzzy_result(evaluation)
-    if(fuzzy_res$ret > 65){
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(fuzzy_res$ret > 65,0,1)
+    Eval1=ifelse(fuzzy_res$ret > 65,1,0)
   }
 
   if(method == "fuzzy70") {
     fuzzy_res <- fuzzy_result(evaluation)
-    if(fuzzy_res$ret > 70){
-      Eval0 <- 0
-      Eval1 <- 1
-    }
+    Eval0=ifelse(fuzzy_res$ret > 70,0,1)
+    Eval1=ifelse(fuzzy_res$ret > 70,1,0)
   }
 
   return_result_matrix <- cbind(evaluation,
